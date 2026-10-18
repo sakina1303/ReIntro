@@ -9,6 +9,7 @@
 }
 
 body { background: var(--cream); }
+.mobile-hint { display: none; }
 ::selection { background: #b8c8ff; color: #090a0c; }
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color: #7792ff; }
 .page-progress span { background: #b8c8ff; }
@@ -192,6 +193,9 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   .agent-sculpture-wrap { width: min(100%, 295px); }
 }
 @media (max-width: 600px) {
+  .chapter[id] { scroll-margin-top: 68px; }
+  .desktop-hint { display: none; }
+  .mobile-hint { display: inline; }
   .act-visual-three { height: 390px; }
   .agent-sculpture-wrap { width: min(94%, 250px); top: 5px; }
   .robot-hint { display: none; }
@@ -445,4 +449,68 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   .next-core.is-entering { animation: none; }
   .hero-collage, .journey-act .act-visual { transform: none; }
   .project-disc, .case-art { transition: none; }
+}
+
+/* A deliberate single-column composition for phones. */
+@media (max-width: 600px) {
+  .site-header { padding-inline: 20px; }
+  .menu-toggle { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+  .mobile-nav:not([hidden]) { max-height: calc(100dvh - 68px); overflow-y: auto; }
+  .hero { min-height: 0; padding: 68px 20px 27px; }
+  .hero-inner { padding-top: clamp(48px, 8svh, 82px); }
+  .hero .eyebrow { margin-bottom: 28px; }
+  .hero h1 { font-size: clamp(46px, 13.3vw, 72px); line-height: .94; max-width: 100%; }
+  .hero-lower { margin-top: 28px; max-width: 100%; }
+  .hero-lower > p { font-size: clamp(16px, 4.3vw, 18px); line-height: 1.45; }
+  .hero-actions { margin-top: 25px; gap: 19px; }
+  .primary-cta { min-height: 52px; min-width: min(100%, 220px); }
+  .hero-collage { position: relative; inset: auto; width: min(60vw, 230px); height: min(74vw, 290px); margin: 28px 16px 25px auto; opacity: 1; transform: none; }
+  .hero-portrait-card { inset: 0; width: 100%; height: 100%; }
+  .hero-sticker { width: 62px; height: 62px; right: -15px; bottom: -14px; font-size: 7px; }
+  .hero-bottom { position: relative; inset: auto; margin-top: 7px; font-size: 7px; gap: 9px; line-height: 1.45; }
+  .hero-bottom .mobile-hint { max-width: 49%; }
+  .hero-bottom span:last-child { white-space: nowrap; }
+  .journey { padding-inline: 20px; }
+  .chapter-intro h2 { font-size: clamp(50px, 12vw, 70px); }
+  .journey-act { grid-template-columns: 47px minmax(0, 1fr); gap: 13px; }
+  .journey-track::before { left: 47px; }
+  .journey-act::before { left: 42px; }
+  .act-content h3 { font-size: clamp(30px, 8.5vw, 44px); }
+  .act-visual { width: 100%; }
+  .act-visual-three { height: 350px; }
+  .projects-heading { padding-inline: 20px; }
+  .projects-heading h2 { font-size: clamp(38px, 10vw, 62px); }
+  .projects-heading > p:last-child { margin-top: 22px; }
+  .project-orbit { height: 340px; }
+  .project-disc { width: min(94vw, 410px); aspect-ratio: 1.38; }
+  .project-orbit::after { left: 0; right: 0; }
+  .project-controls { gap: 20px; }
+  .orbit-arrow { width: 48px; height: 48px; }
+  .project-story { margin-top: 35px; padding-inline: 20px; }
+  .project-story h3 { font-size: clamp(56px, 16vw, 76px); }
+  .project-story-main p { font-size: 16px; }
+  .project-links { flex-wrap: wrap; row-gap: 14px; }
+  .gallery-hint { font-size: 8px; line-height: 1.5; }
+  .open-source { padding: 85px 20px 90px; }
+  .open-source h2 { font-size: clamp(38px, 10.6vw, 62px); line-height: .98; margin: 30px 0 48px; }
+  .open-grid { gap: 48px; }
+  .open-asterisk { margin-bottom: 20px; }
+  .open-manifesto p { font-size: 20px; }
+  .maintainer-recognition { align-items: flex-start; }
+  .next { padding: 84px 20px 80px; }
+  .next h2 { font-size: clamp(49px, 12.8vw, 72px); }
+  .next-copy > p { margin-top: 27px; }
+  .next-art { min-height: 360px; }
+  .question-stage { width: min(78vw, 310px); }
+  .question-prompt { font-size: 7px; }
+  .footer { padding-inline: 20px; }
+  .footer-links a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+@media (max-width: 360px) {
+  .hero h1 { font-size: 12.8vw; }
+  .project-orbit { height: 310px; }
+  .open-source h2 { font-size: 10vw; }
+  .next h2 { font-size: 12vw; }
+  .question-stage { width: 78vw; }
 }

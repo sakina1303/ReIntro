@@ -237,7 +237,7 @@ if (openSource && inkCanvas) {
   const inkLife = 4200;
   function sizeInkCanvas() {
     const bounds = openSource.getBoundingClientRect();
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = Math.min(window.devicePixelRatio || 1, window.innerWidth <= 600 ? 1.5 : 2);
     inkCanvas.width = Math.round(bounds.width * ratio);
     inkCanvas.height = Math.round(bounds.height * ratio);
     inkCanvas.style.width = `${bounds.width}px`;
@@ -265,10 +265,11 @@ if (openSource && inkCanvas) {
       if (age > inkLife) { strokes.splice(i, 1); continue; }
       const fade = 1 - age / inkLife;
       const path = inkPath(stroke.points);
-      for (let layer = 0; layer < 12; layer++) {
+      const layers = window.innerWidth <= 600 ? 8 : 12;
+      for (let layer = 0; layer < layers; layer++) {
         ink.strokeStyle = layer < 6 ? '#a18bdf' : '#856dd4';
         ink.globalAlpha = (.025 + layer * .004) * fade;
-        ink.lineWidth = 160 - layer * 11;
+        ink.lineWidth = 160 - layer * (window.innerWidth <= 600 ? 16 : 11);
         ink.lineCap = 'round';
         ink.lineJoin = 'round';
         ink.shadowColor = '#927add';
@@ -311,6 +312,13 @@ if (openSource && inkCanvas) {
     activeInkStroke = null;
     addInk(x, y);
   }, { passive: true });
+  openSource.addEventListener('touchmove', event => {
+    if (motionReduced.matches || !event.touches.length) return;
+    const bounds = openSource.getBoundingClientRect();
+    const touch = event.touches[0];
+    addInk(touch.clientX - bounds.left, touch.clientY - bounds.top);
+  }, { passive: true });
+  openSource.addEventListener('touchend', () => { activeInkStroke = null; }, { passive: true });
 }
 
 const questionArt = document.getElementById('question-art');
@@ -362,7 +370,7 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
   const portraitInk = portraitScratch.getContext('2d');
   let lastScratchPoint = null;
   function sizeScratchCanvas(canvas, context, width, height) {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = Math.min(window.devicePixelRatio || 1, window.innerWidth <= 600 ? 1.5 : 2);
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -432,6 +440,12 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
   else window.addEventListener('resize', prepareScratch);
   hero.addEventListener('pointermove', scratch, { passive: true });
   hero.addEventListener('pointerdown', scratch, { passive: true });
+  hero.addEventListener('touchmove', event => {
+    if (motionReduced.matches || !event.touches.length) return;
+    const touch = event.touches[0];
+    scratch({ clientX: touch.clientX, clientY: touch.clientY, pointerType: 'touch', buttons: 1 });
+  }, { passive: true });
+  hero.addEventListener('touchend', () => { lastScratchPoint = null; }, { passive: true });
   hero.addEventListener('pointerleave', () => { lastScratchPoint = null; });
 }
 const editorialHeadings = document.querySelectorAll('.chapter-intro h2, .projects-heading h2, .open-source h2, .next h2');
