@@ -36,6 +36,25 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
               linear-gradient(125deg, #e6e9ff, #f7e8e7 56%, #e8e1f5);
   clip-path: none;
 }
+.hero-code-field {
+  position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+  color: #394c80; font: 500 clamp(10px, .9vw, 14px)/1.5 var(--mono);
+  letter-spacing: .025em;
+}
+.code-fragment {
+  position: absolute; display: block; white-space: nowrap;
+  opacity: .17; transform: rotate(var(--tilt, 0deg));
+}
+.code-fragment-a { left: 5%; top: 12%; --tilt: -7deg; }
+.code-fragment-b { left: 29%; top: 18%; --tilt: 5deg; opacity: .13; }
+.code-fragment-c { left: 67%; top: 10%; --tilt: -4deg; }
+.code-fragment-d { left: 7%; top: 43%; --tilt: 11deg; font-size: clamp(46px, 7vw, 100px); opacity: .08; }
+.code-fragment-e { left: 49%; top: 38%; --tilt: -8deg; opacity: .13; }
+.code-fragment-f { left: 12%; top: 65%; --tilt: 4deg; }
+.code-fragment-g { left: 68%; top: 64%; --tilt: 7deg; opacity: .14; }
+.code-fragment-h { left: 34%; top: 76%; --tilt: -9deg; font-size: clamp(30px, 4vw, 62px); opacity: .09; }
+.code-fragment-i { left: 55%; top: 87%; --tilt: -3deg; }
+.code-fragment-j { left: 4%; top: 89%; --tilt: 6deg; }
 .hero-scratch { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
 .hero h1, .hero-lower > p, .hero .eyebrow, .hero-bottom { text-shadow: 0 2px 8px #090a0c99; }
 .hero-inner { z-index: 3; padding-top: clamp(70px, 10vh, 120px); }
@@ -454,6 +473,14 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 /* A deliberate single-column composition for phones. */
 @media (max-width: 600px) {
   .site-header { padding-inline: 20px; }
+  .hero-code-field { font-size: 9px; }
+  .code-fragment-a { left: 5%; top: 7%; }
+  .code-fragment-b { left: 43%; top: 24%; }
+  .code-fragment-d { left: 6%; top: 42%; font-size: 48px; }
+  .code-fragment-f { left: 9%; top: 65%; }
+  .code-fragment-h { left: 23%; top: 78%; font-size: 34px; }
+  .code-fragment-j { left: 4%; top: 92%; }
+  .code-fragment-c, .code-fragment-e, .code-fragment-g, .code-fragment-i { display: none; }
   .menu-toggle { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
   .mobile-nav:not([hidden]) { max-height: calc(100dvh - 68px); overflow-y: auto; }
   .hero { min-height: 0; padding: 68px 20px 27px; }
