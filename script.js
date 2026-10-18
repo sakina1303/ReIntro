@@ -157,6 +157,7 @@ if (robot) {
   let touchResetTimer;
   let gestureTimers = [];
   let gestureLocked = false;
+  let agentVisible = false;
   const setPose = pose => { robot.dataset.pose = pose; };
   const moveSculpture = event => {
     const rect = robot.getBoundingClientRect();
@@ -190,10 +191,7 @@ if (robot) {
       if (!gestureLocked) setPose('idle');
     }
   });
-  robot.addEventListener('click', () => {
-    robotState = (robotState + 1) % robotSequence.length;
-    robotStep.textContent = robotSequence[robotState][0];
-    robotStatus.textContent = robotSequence[robotState][1];
+  const playGesture = () => {
     robot.classList.remove('is-waving');
     void robot.offsetWidth;
     robot.classList.add('is-waving');
@@ -211,7 +209,19 @@ if (robot) {
     ];
     clearTimeout(waveTimer);
     waveTimer = setTimeout(() => robot.classList.remove('is-waving'), 1450);
+  };
+  robot.addEventListener('click', () => {
+    robotState = (robotState + 1) % robotSequence.length;
+    robotStep.textContent = robotSequence[robotState][0];
+    robotStatus.textContent = robotSequence[robotState][1];
+    playGesture();
   });
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    new IntersectionObserver(entries => { agentVisible = entries[0].isIntersecting; }, { threshold: .45 }).observe(robot);
+    setInterval(() => {
+      if (agentVisible && !gestureLocked && !robot.matches(':hover')) playGesture();
+    }, 6200);
+  }
 }
 
 const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
