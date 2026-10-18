@@ -364,7 +364,7 @@ if (openPuzzle) {
   let suppressClickId = null;
 
   const sharedOrder = new URLSearchParams(location.search).get('puzzle')?.split('-');
-  if (sharedOrder?.length === 4 && new Set(sharedOrder).size === 4 && sharedOrder.every(id => puzzleItems[id])) {
+  if (sharedOrder?.length === 4 && sharedOrder.every((id, index) => puzzleItems[id]?.shape === index)) {
     placed.splice(0, 4, ...sharedOrder);
   }
 
@@ -373,9 +373,10 @@ if (openPuzzle) {
     slots.forEach((slot, index) => {
       const item = puzzleItems[placed[index]];
       slot.replaceChildren();
+      slot.classList.remove('is-mismatch');
       slot.classList.toggle('is-filled', Boolean(item));
-      slot.classList.toggle('is-ready', Boolean(selected && !item));
-      slot.setAttribute('aria-label', item ? `${item.title}, puzzle space ${index + 1}. Tap to return piece.` : `Empty puzzle space ${index + 1}. Tap to place selected piece.`);
+      slot.classList.toggle('is-ready', Boolean(selected && puzzleItems[selected].shape === index && !item));
+      slot.setAttribute('aria-label', item ? `${item.title}, puzzle space ${index + 1}. Tap to return piece.` : `Empty puzzle space ${index + 1}. Fits ${Object.values(puzzleItems).find(piece => piece.shape === index).title}.`);
       slot.append(puzzleShape(index));
       if (item) slot.append(puzzleIcon(item));
     });
@@ -396,6 +397,14 @@ if (openPuzzle) {
 
   function placePiece(id, index) {
     if (!puzzleItems[id]) return;
+    if (puzzleItems[id].shape !== index) {
+      const slot = slots[index];
+      slot.classList.remove('is-mismatch');
+      void slot.offsetWidth;
+      slot.classList.add('is-mismatch');
+      status.textContent = 'That shape belongs in another space · Try again';
+      return;
+    }
     const previous = placed.indexOf(id);
     if (previous !== -1) placed[previous] = null;
     placed[index] = id;
@@ -424,7 +433,8 @@ if (openPuzzle) {
     drag.piece.style.setProperty('--drag-x', `${dx}px`);
     drag.piece.style.setProperty('--drag-y', `${dy}px`);
     slots.forEach(slot => slot.classList.remove('is-drop-target'));
-    document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot')?.classList.add('is-drop-target');
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot');
+    if (target && puzzleItems[drag.id].shape === Number(target.dataset.slot)) target.classList.add('is-drop-target');
   });
   function finishDrag(event) {
     if (!drag) return;
@@ -560,6 +570,7 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
     context.restore();
   }
   function scratchAt(x, y) {
+    hero.classList.add('is-scratched');
     dab(backgroundInk, x, y, 68);
     const heroBounds = hero.getBoundingClientRect();
     const portraitBounds = portraitCard.getBoundingClientRect();
