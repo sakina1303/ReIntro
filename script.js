@@ -730,7 +730,10 @@ function updateEditorialMotion() {
   if (portraitScene && window.scrollY < viewport * 1.3 && window.innerWidth > 850) {
     portraitScene.style.setProperty('--portrait-y', `${Math.round(window.scrollY * .18)}px`);
   }
-  journeyVisuals.forEach(visual => {
+  journeyVisuals.forEach((visual, index) => {
+    // The domino route passes behind the first two cards, so their edges must
+    // stay aligned with the fixed canvas path throughout the scroll.
+    if (index < 2) return;
     const rect = visual.getBoundingClientRect();
     if (rect.bottom < 0 || rect.top > viewport) return;
     const progress = (rect.top + rect.height / 2 - viewport / 2) / viewport;
