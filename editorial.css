@@ -402,38 +402,40 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .puzzle-heading > span { color: #51679c; letter-spacing: .11em; }
 .puzzle-heading strong { font: 700 clamp(20px, 1.8vw, 27px)/1.05 var(--display); letter-spacing: -.055em; }
 .puzzle-heading small { color: #565f70; }
-.puzzle-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 7px; background: #d8ddeb; border: 1px solid #b2bfd8; }
-.puzzle-slot { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 91px; padding: 12px; text-align: left; border: 1px dashed #9cabcb; background: #eff0f4; color: #8592ab; cursor: pointer; transition: background .22s, transform .22s; }
-.puzzle-slot > span { font: 600 12px var(--mono); }
-.puzzle-slot.is-ready { background: #e7e8ff; border-color: #7185bd; }
-.puzzle-slot.is-filled { border: 1px solid #899dcd; background: #d6def7; color: #17223f; }
-.puzzle-slot.is-filled:nth-child(2) { background: #e9ddea; }
-.puzzle-slot.is-filled:nth-child(3) { background: #dfebe7; }
-.puzzle-slot.is-filled:nth-child(4) { background: #ece6d9; }
-.puzzle-slot.is-filled::after { content: ''; position: absolute; z-index: 2; width: 19px; height: 19px; right: -11px; top: calc(50% - 10px); border: 1px solid #899dcd; border-radius: 50%; background: inherit; }
-.puzzle-slot.is-filled:nth-child(even)::after { right: auto; left: -11px; }
-.puzzle-slot.is-filled > span, .puzzle-piece > span { font: 700 19px/1 var(--display); }
-.puzzle-slot strong, .puzzle-piece strong { display: block; margin-top: 5px; font: 700 clamp(13px, 1.1vw, 16px)/1.1 var(--display); letter-spacing: -.045em; }
-.puzzle-slot small, .puzzle-piece small { display: block; margin-top: 3px; font: 500 9px/1.2 var(--mono); }
-.puzzle-tray { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; min-height: 84px; padding: 17px 1px 9px; }
-.puzzle-piece { position: relative; min-width: 0; min-height: 66px; padding: 8px 6px; border: 1px solid #9aaace; background: #dce3fa; color: #1e2b4b; text-align: left; cursor: grab; touch-action: none; transform: rotate(var(--puzzle-tilt)); transition: transform .2s, opacity .2s, box-shadow .2s; }
-.puzzle-piece:nth-child(1) { --puzzle-tilt: -5deg; background: #e9ddea; }
-.puzzle-piece:nth-child(2) { --puzzle-tilt: 6deg; background: #dfebe7; }
-.puzzle-piece:nth-child(3) { --puzzle-tilt: 4deg; background: #dce3fa; }
-.puzzle-piece:nth-child(4) { --puzzle-tilt: -7deg; background: #ece6d9; }
-.puzzle-piece::after { content: ''; position: absolute; width: 13px; height: 13px; right: -8px; top: 24px; border: 1px solid #9aaace; border-radius: 50%; background: inherit; }
-.puzzle-piece:hover, .puzzle-piece.is-selected { transform: translateY(-5px) rotate(0); box-shadow: 4px 5px 0 #adbbe2; }
-.puzzle-piece.is-dragging { z-index: 5; pointer-events: none; cursor: grabbing; transform: translate(var(--drag-x), var(--drag-y)) rotate(0); transition: none; box-shadow: 8px 10px 0 #adbbe2; }
-.puzzle-slot.is-drop-target { background: #d8defa; outline: 2px solid #7185bd; outline-offset: -3px; }
-.puzzle-piece.is-selected { outline: 2px solid #51679c; outline-offset: 2px; }
+.puzzle-board { display: grid; grid-template-columns: repeat(2, 104px); grid-template-rows: repeat(2, 104px); justify-content: center; padding: 19px 23px; background: #d8ddeb; border: 1px solid #b2bfd8; overflow: hidden; }
+.puzzle-slot { position: relative; display: grid; place-items: center; min-width: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.puzzle-slot:nth-child(1) { z-index: 4; }
+.puzzle-slot:nth-child(2) { z-index: 3; }
+.puzzle-slot:nth-child(3) { z-index: 2; }
+.puzzle-slot:nth-child(4) { z-index: 1; }
+.puzzle-shape { position: absolute; width: 140%; height: 140%; left: -20%; top: -20%; overflow: visible; pointer-events: none; filter: drop-shadow(0 2px 2px #41517228); }
+.puzzle-shape path { fill: #edf0f7; stroke: #97a5c1; stroke-width: 1.6; vector-effect: non-scaling-stroke; transition: fill .2s, stroke .2s; }
+.puzzle-slot.is-ready .puzzle-shape path, .puzzle-slot.is-drop-target .puzzle-shape path { fill: #e2e5ff; stroke: #536bab; }
+.puzzle-slot.is-filled .puzzle-shape path { fill: var(--piece-color); stroke: #7184aa; }
+.puzzle-slot.is-filled:nth-child(1) { --piece-color: #d9dff9; }
+.puzzle-slot.is-filled:nth-child(2) { --piece-color: #ecddec; }
+.puzzle-slot.is-filled:nth-child(3) { --piece-color: #dfebe8; }
+.puzzle-slot.is-filled:nth-child(4) { --piece-color: #eee6df; }
+.puzzle-icon { position: relative; z-index: 1; display: block; width: 36px; height: 36px; margin: auto; object-fit: contain; pointer-events: none; }
+.puzzle-slot .puzzle-icon { width: 44px; height: 44px; }
+.puzzle-slot:focus-visible, .puzzle-piece:focus-visible { outline: 2px solid #233d84; outline-offset: 5px; }
+.puzzle-tray { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; min-height: 94px; padding: 20px 8px 14px; }
+.puzzle-piece { position: relative; display: grid; place-items: center; min-width: 0; height: 76px; padding: 0; border: 0; background: transparent; cursor: grab; touch-action: none; transform: rotate(var(--puzzle-tilt)); transition: transform .2s, opacity .2s; }
+.puzzle-piece:nth-child(1) { --puzzle-tilt: -9deg; --piece-color: #dfebe8; }
+.puzzle-piece:nth-child(2) { --puzzle-tilt: 8deg; --piece-color: #eee6df; }
+.puzzle-piece:nth-child(3) { --puzzle-tilt: 7deg; --piece-color: #d9dff9; }
+.puzzle-piece:nth-child(4) { --puzzle-tilt: -8deg; --piece-color: #ecddec; }
+.puzzle-piece .puzzle-shape { filter: drop-shadow(2px 4px 2px #53627f55); }
+.puzzle-piece .puzzle-shape path { fill: var(--piece-color); stroke: #7184aa; stroke-width: 2; }
+.puzzle-piece:hover, .puzzle-piece.is-selected { transform: translateY(-6px) rotate(0); }
+.puzzle-piece.is-dragging { z-index: 5; pointer-events: none; cursor: grabbing; transform: translate(var(--drag-x), var(--drag-y)) rotate(0); transition: none; }
+.puzzle-slot.is-drop-target { filter: brightness(1.06); }
+.puzzle-piece.is-selected .puzzle-shape path { stroke: #233d84; stroke-width: 3; }
 .puzzle-piece[hidden] { display: none; }
 .puzzle-result { grid-column: 1 / -1; align-self: center; margin: 0; color: #344b87; font: 700 17px/1.15 var(--display); letter-spacing: -.035em; }
 .puzzle-result[hidden] { display: none; }
 .puzzle-result span { color: #5d6981; font: 500 10px/1.4 var(--mono); letter-spacing: 0; }
 .open-source .puzzle-result a { display: block; width: fit-content; margin-top: 7px; color: #29477c; font: 700 10px/1.3 var(--mono); letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
-.puzzle-piece > span { font-size: 15px; }
-.puzzle-piece strong { font-size: 10px; overflow-wrap: anywhere; }
-.puzzle-piece small { font-size: 7px; }
 .puzzle-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; border-top: 1px solid #c3c8d2; color: #53627f; }
 .puzzle-footer button { padding: 6px 0 6px 6px; border: 0; background: none; color: #263f83; font: 700 9px var(--mono); cursor: pointer; white-space: nowrap; }
 .puzzle-footer button:disabled { opacity: .38; cursor: default; }
@@ -603,10 +605,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   .open-source h2 { font-size: clamp(38px, 10.6vw, 62px); line-height: .98; margin: 30px 0 34px; }
   .open-puzzle { width: 100%; margin: 0 0 58px; box-shadow: 7px 7px 0 #aebbe0; }
   .puzzle-heading strong { font-size: 23px; }
-  .puzzle-tray { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 17px 3px 12px; }
-  .puzzle-piece { min-height: 58px; }
-  .puzzle-piece strong { font-size: 12px; }
-  .puzzle-piece small { font-size: 8px; }
+  .puzzle-board { grid-template-columns: repeat(2, 95px); grid-template-rows: repeat(2, 95px); }
+  .puzzle-tray { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; padding: 19px 6px 12px; }
+  .puzzle-piece { height: 66px; }
+  .puzzle-piece .puzzle-icon { width: 31px; height: 31px; }
   .open-grid { gap: 48px; }
   .open-asterisk { margin-bottom: 20px; }
   .open-manifesto p { font-size: 20px; }

@@ -324,11 +324,35 @@ if (openSource && inkCanvas) {
 const openPuzzle = document.getElementById('open-puzzle');
 if (openPuzzle) {
   const puzzleItems = {
-    wap: { symbol: '✦', title: 'WAP', detail: 'Maintainer · LOR' },
-    eduaid: { symbol: '✳', title: 'EduAid', detail: 'Accessible UI' },
-    hacktoberfest: { symbol: '⌘', title: 'Hacktoberfest', detail: 'Community' },
-    permkit: { symbol: '◇', title: 'PermKit', detail: 'Open source tool' }
+    github: { title: 'GitHub', icon: 'github.svg', shape: 0 },
+    stackoverflow: { title: 'Stack Overflow', icon: 'stackoverflow.svg', shape: 1 },
+    react: { title: 'React', icon: 'react.svg', shape: 2 },
+    npm: { title: 'npm', icon: 'npm.svg', shape: 3 }
   };
+  const puzzleShapes = [
+    'M0 0 H100 V31 C100 36 104 38 108 38 C117 38 119 46 119 50 C119 54 117 62 108 62 C104 62 100 64 100 69 V100 H69 C64 100 62 96 62 92 C62 83 54 81 50 81 C46 81 38 83 38 92 C38 96 36 100 31 100 H0 Z',
+    'M0 0 H100 V100 H69 C64 100 62 104 62 108 C62 117 54 119 50 119 C46 119 38 117 38 108 C38 104 36 100 31 100 H0 V69 C0 64 4 62 8 62 C17 62 19 54 19 50 C19 46 17 38 8 38 C4 38 0 36 0 31 Z',
+    'M0 0 H31 C36 0 38 -4 38 -8 C38 -17 46 -19 50 -19 C54 -19 62 -17 62 -8 C62 -4 64 0 69 0 H100 V31 C100 36 96 38 92 38 C83 38 81 46 81 50 C81 54 83 62 92 62 C96 62 100 64 100 69 V100 H0 Z',
+    'M0 0 H31 C36 0 38 4 38 8 C38 17 46 19 50 19 C54 19 62 17 62 8 C62 4 64 0 69 0 H100 V100 H0 V69 C0 64 -4 62 -8 62 C-17 62 -19 54 -19 50 C-19 46 -17 38 -8 38 C-4 38 0 36 0 31 Z'
+  ];
+  function puzzleShape(index) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'puzzle-shape');
+    svg.setAttribute('viewBox', '-20 -20 140 140');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', puzzleShapes[index]);
+    svg.append(path);
+    return svg;
+  }
+  function puzzleIcon(item) {
+    const icon = document.createElement('img');
+    icon.className = 'puzzle-icon';
+    icon.src = `assets/brand-icons/${item.icon}`;
+    icon.alt = '';
+    icon.draggable = false;
+    return icon;
+  }
   const slots = Array.from(openPuzzle.querySelectorAll('.puzzle-slot'));
   const pieces = Array.from(openPuzzle.querySelectorAll('.puzzle-piece'));
   const status = document.getElementById('puzzle-status');
@@ -352,19 +376,14 @@ if (openPuzzle) {
       slot.classList.toggle('is-filled', Boolean(item));
       slot.classList.toggle('is-ready', Boolean(selected && !item));
       slot.setAttribute('aria-label', item ? `${item.title}, puzzle space ${index + 1}. Tap to return piece.` : `Empty puzzle space ${index + 1}. Tap to place selected piece.`);
-      if (item) {
-        for (const [tag, value] of [['span', item.symbol], ['strong', item.title], ['small', item.detail]]) {
-          const label = document.createElement(tag);
-          label.textContent = value;
-          slot.append(label);
-        }
-      } else {
-        const number = document.createElement('span');
-        number.textContent = String(index + 1).padStart(2, '0');
-        slot.append(number);
-      }
+      slot.append(puzzleShape(index));
+      if (item) slot.append(puzzleIcon(item));
     });
     pieces.forEach(piece => {
+      if (!piece.firstChild) {
+        const item = puzzleItems[piece.dataset.piece];
+        piece.append(puzzleShape(item.shape), puzzleIcon(item));
+      }
       piece.hidden = placed.includes(piece.dataset.piece);
       piece.classList.toggle('is-selected', piece.dataset.piece === selected);
       piece.setAttribute('aria-pressed', String(piece.dataset.piece === selected));
@@ -435,7 +454,7 @@ if (openPuzzle) {
     const url = new URL(location.href);
     url.searchParams.set('puzzle', placed.join('-'));
     url.hash = 'open-source';
-    const text = `I put together Sakina Farukh Ahmed's open source work: ${placed.map(id => puzzleItems[id].title).join(' · ')}.`;
+    const text = `I put together Sakina Farukh Ahmed's developer puzzle: ${placed.map(id => puzzleItems[id].title).join(' · ')}.`;
     if (navigator.share) {
       try { await navigator.share({ title: 'Sakina’s open source puzzle', text, url: url.href }); return; }
       catch (error) { if (error.name === 'AbortError') return; }
