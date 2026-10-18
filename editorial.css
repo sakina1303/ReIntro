@@ -157,7 +157,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .journey .act-content > p:not(.act-kicker), .journey .chapter-deck { text-shadow: 0 1px 0 #eeeeeb, 0 -1px 0 #eeeeeb; }
 .projects { isolation: isolate; }
 .project-splash { position: absolute; z-index: 2; left: 0; top: 0; width: 100%; height: clamp(310px, 66vw, 600px); pointer-events: none; }
-.projects > :not(.project-splash) { position: relative; z-index: 1; }
+.projects > :not(.project-splash) { position: relative; z-index: 3; }
 .projects > .projects-heading { z-index: 3; }
 .projects-heading h2, .projects-heading > p { text-shadow: 0 2px 5px #090a0c, 0 0 20px #090a0c; }
 .projects-heading > p:last-child { color: #f1eff8; }
