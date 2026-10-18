@@ -321,6 +321,136 @@ if (openSource && inkCanvas) {
   openSource.addEventListener('touchend', () => { activeInkStroke = null; }, { passive: true });
 }
 
+const openPuzzle = document.getElementById('open-puzzle');
+if (openPuzzle) {
+  const puzzleItems = {
+    wap: { symbol: '✦', title: 'WAP', detail: 'Maintainer · LOR' },
+    eduaid: { symbol: '✳', title: 'EduAid', detail: 'Accessible UI' },
+    hacktoberfest: { symbol: '⌘', title: 'Hacktoberfest', detail: 'Community' },
+    permkit: { symbol: '◇', title: 'PermKit', detail: 'Open source tool' }
+  };
+  const slots = Array.from(openPuzzle.querySelectorAll('.puzzle-slot'));
+  const pieces = Array.from(openPuzzle.querySelectorAll('.puzzle-piece'));
+  const status = document.getElementById('puzzle-status');
+  const shareButton = document.getElementById('puzzle-share');
+  const result = document.getElementById('puzzle-result');
+  const placed = [null, null, null, null];
+  let selected = null;
+  let drag = null;
+  let suppressClickId = null;
+
+  const sharedOrder = new URLSearchParams(location.search).get('puzzle')?.split('-');
+  if (sharedOrder?.length === 4 && new Set(sharedOrder).size === 4 && sharedOrder.every(id => puzzleItems[id])) {
+    placed.splice(0, 4, ...sharedOrder);
+  }
+
+  function renderPuzzle() {
+    const count = placed.filter(Boolean).length;
+    slots.forEach((slot, index) => {
+      const item = puzzleItems[placed[index]];
+      slot.replaceChildren();
+      slot.classList.toggle('is-filled', Boolean(item));
+      slot.classList.toggle('is-ready', Boolean(selected && !item));
+      slot.setAttribute('aria-label', item ? `${item.title}, puzzle space ${index + 1}. Tap to return piece.` : `Empty puzzle space ${index + 1}. Tap to place selected piece.`);
+      if (item) {
+        for (const [tag, value] of [['span', item.symbol], ['strong', item.title], ['small', item.detail]]) {
+          const label = document.createElement(tag);
+          label.textContent = value;
+          slot.append(label);
+        }
+      } else {
+        const number = document.createElement('span');
+        number.textContent = String(index + 1).padStart(2, '0');
+        slot.append(number);
+      }
+    });
+    pieces.forEach(piece => {
+      piece.hidden = placed.includes(piece.dataset.piece);
+      piece.classList.toggle('is-selected', piece.dataset.piece === selected);
+      piece.setAttribute('aria-pressed', String(piece.dataset.piece === selected));
+    });
+    openPuzzle.classList.toggle('is-complete', count === 4);
+    result.hidden = count !== 4;
+    shareButton.disabled = count !== 4;
+    status.textContent = count === 4 ? '4 / 4 · Your build is ready to share' : `${count} / 4 · Assemble the pieces`;
+  }
+
+  function placePiece(id, index) {
+    if (!puzzleItems[id]) return;
+    const previous = placed.indexOf(id);
+    if (previous !== -1) placed[previous] = null;
+    placed[index] = id;
+    selected = null;
+    renderPuzzle();
+  }
+
+  pieces.forEach(piece => {
+    piece.addEventListener('click', () => {
+      if (suppressClickId === piece.dataset.piece) { suppressClickId = null; return; }
+      selected = selected === piece.dataset.piece ? null : piece.dataset.piece;
+      renderPuzzle();
+    });
+    piece.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      drag = { piece, id: piece.dataset.piece, x: event.clientX, y: event.clientY, moved: false };
+    });
+  });
+  document.addEventListener('pointermove', event => {
+    if (!drag) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 7) return;
+    drag.moved = true;
+    drag.piece.classList.add('is-dragging');
+    drag.piece.style.setProperty('--drag-x', `${dx}px`);
+    drag.piece.style.setProperty('--drag-y', `${dy}px`);
+    slots.forEach(slot => slot.classList.remove('is-drop-target'));
+    document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot')?.classList.add('is-drop-target');
+  });
+  function finishDrag(event) {
+    if (!drag) return;
+    const { piece, id, moved } = drag;
+    const target = moved ? document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot') : null;
+    piece.classList.remove('is-dragging');
+    piece.style.removeProperty('--drag-x');
+    piece.style.removeProperty('--drag-y');
+    slots.forEach(slot => slot.classList.remove('is-drop-target'));
+    drag = null;
+    if (moved) {
+      suppressClickId = id;
+      setTimeout(() => { suppressClickId = null; }, 0);
+      if (target) placePiece(id, Number(target.dataset.slot));
+    }
+  }
+  document.addEventListener('pointerup', finishDrag);
+  document.addEventListener('pointercancel', finishDrag);
+  slots.forEach((slot, index) => {
+    slot.addEventListener('click', () => {
+      if (selected) placePiece(selected, index);
+      else if (placed[index]) { placed[index] = null; renderPuzzle(); }
+    });
+  });
+  shareButton.addEventListener('click', async () => {
+    if (placed.some(id => !id)) return;
+    const url = new URL(location.href);
+    url.searchParams.set('puzzle', placed.join('-'));
+    url.hash = 'open-source';
+    const text = `I put together Sakina Farukh Ahmed's open source work: ${placed.map(id => puzzleItems[id].title).join(' · ')}.`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Sakina’s open source puzzle', text, url: url.href }); return; }
+      catch (error) { if (error.name === 'AbortError') return; }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url.href}`);
+      status.textContent = 'Share link copied · Your puzzle travels with it';
+    } catch {
+      status.textContent = 'Share link ready in the address bar';
+      history.replaceState(null, '', url.href);
+    }
+  });
+  renderPuzzle();
+}
+
 const questionArt = document.getElementById('question-art');
 const questionText = document.getElementById('question-text');
 if (questionArt && questionText) {
