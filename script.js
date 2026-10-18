@@ -154,18 +154,34 @@ if (robot) {
   ];
   let robotState = 0;
   let waveTimer;
-  robot.addEventListener('pointermove', event => {
+  let touchResetTimer;
+  const moveSculpture = event => {
     const rect = robot.getBoundingClientRect();
     const dx = Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2)));
     const dy = Math.max(-1, Math.min(1, (event.clientY - rect.top - rect.height / 2) / (rect.height / 2)));
-    robot.style.setProperty('--eye-x', `${Math.round(dx * 6)}px`);
-    robot.style.setProperty('--eye-y', `${Math.round(dy * 5)}px`);
-    robot.style.setProperty('--head-tilt', `${Math.round(dx * 5)}deg`);
-  });
-  robot.addEventListener('pointerleave', () => {
+    robot.style.setProperty('--eye-x', `${(dx * 3.2).toFixed(1)}px`);
+    robot.style.setProperty('--eye-y', `${(dy * 2.1).toFixed(1)}px`);
+    robot.style.setProperty('--body-x', `${(dx * 18).toFixed(1)}px`);
+    robot.style.setProperty('--body-y', `${(dy * 12).toFixed(1)}px`);
+    robot.style.setProperty('--head-tilt', `${(dx * 2.5).toFixed(1)}deg`);
+  };
+  const resetSculpture = () => {
     robot.style.setProperty('--eye-x', '0px');
     robot.style.setProperty('--eye-y', '0px');
+    robot.style.setProperty('--body-x', '0px');
+    robot.style.setProperty('--body-y', '0px');
     robot.style.setProperty('--head-tilt', '0deg');
+  };
+  robot.addEventListener('pointermove', moveSculpture);
+  robot.addEventListener('pointerdown', event => {
+    moveSculpture(event);
+    if (event.pointerType !== 'mouse') {
+      clearTimeout(touchResetTimer);
+      touchResetTimer = setTimeout(resetSculpture, 1300);
+    }
+  }, { passive: true });
+  robot.addEventListener('pointerleave', event => {
+    if (event.pointerType === 'mouse') resetSculpture();
   });
   robot.addEventListener('click', () => {
     robotState = (robotState + 1) % robotSequence.length;

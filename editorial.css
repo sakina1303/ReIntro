@@ -114,45 +114,50 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .build-stamp { background: #b8c8ff; color: #090a0c; }
 .journey-close { border-color: #b9bab8; }
 
-/* A responsive gallery sculpture for the AI evaluation vignette. */
-.act-visual-three { background: #0c0d10; border-color: #343741; }
-.robot-scene {
-  background-image: linear-gradient(#ffffff0b 1px, transparent 1px), linear-gradient(90deg, #ffffff0b 1px, transparent 1px);
-  background-size: 26px 26px;
-}
+/* A cutout AI sculpture: the portrait and its eyes move on separate planes. */
+.act-visual-three { height: 420px; background: #090a0c; border: 0; }
+.robot-scene { background: #090a0c; }
 .robot-scene::before {
-  content: ''; position: absolute; inset: 15% 6%;
-  background: radial-gradient(circle at 50% 44%, #6a75a033, transparent 52%);
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 54% 38%, #8590a125, transparent 60%), linear-gradient(90deg, #ffffff08 1px, transparent 1px);
+  background-size: auto, 46px 46px;
   pointer-events: none;
 }
-.robot-header { color: #d7d9e2; }
+.robot-header { z-index: 4; color: #d7d9e2; }
 .robot-header i { color: #b8c8ff; }
 .agent-object {
-  --eye-x: 0px; --eye-y: 0px; --head-tilt: 0deg;
-  position: absolute; width: 270px; height: 335px; left: 50%; top: 49%;
-  transform: translate(-50%, -50%) rotate(var(--head-tilt));
-  border: 0; background: transparent; padding: 0; cursor: pointer;
-  transition: transform .45s cubic-bezier(.2,.8,.2,1), filter .4s;
+  --eye-x: 0px; --eye-y: 0px; --body-x: 0px; --body-y: 0px; --head-tilt: 0deg;
+  position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%;
+  border: 0; background: transparent; padding: 0; cursor: crosshair; overflow: hidden;
 }
-.agent-halo {
-  position: absolute; width: 268px; height: 268px; left: 1px; top: 25px; border: 1px solid #8491a752;
-  border-radius: 50%; box-shadow: 0 0 0 21px #ffffff05, 0 0 0 43px #ffffff04;
-  animation: agent-breathe 5s ease-in-out infinite;
+.agent-sculpture-wrap {
+  position: absolute; width: min(76%, 300px); aspect-ratio: 2 / 3; left: 50%; top: 5px;
+  transform: translateX(calc(-50% + var(--body-x))) translateY(var(--body-y)) rotate(var(--head-tilt));
+  transform-origin: 50% 78%; transition: transform .34s cubic-bezier(.2,.8,.2,1), filter .35s;
+  filter: drop-shadow(0 20px 32px #0009);
 }
-.agent-halo::before, .agent-halo::after {
-  content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #b8c8ff;
+.agent-sculpture { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.agent-pupil {
+  position: absolute; z-index: 2; width: 2.45%; aspect-ratio: 1; top: 26.1%;
+  border-radius: 50%; border: 1px solid #80848c;
+  background: radial-gradient(circle at 45% 42%, #252a35 0 24%, #59616c 42%, #242932 68%, #87909b 100%);
+  box-shadow: 0 0 0 1px #2d344159, 0 0 6px #9eacb76b;
+  transform: translate(calc(-50% + var(--eye-x)), calc(-50% + var(--eye-y)));
+  transition: transform .12s ease-out; pointer-events: none;
 }
-.agent-halo::before { left: 50%; top: -4px; }
-.agent-halo::after { left: 50%; bottom: -4px; }
-.agent-sculpture { position: absolute; height: 315px; width: auto; left: 50%; top: 3px; transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 25px 16px #0008); transition: transform .55s cubic-bezier(.2,.8,.2,1), filter .5s; pointer-events: none; }
-.agent-object:hover .agent-sculpture, .agent-object.is-waving .agent-sculpture { transform: translateX(-50%) translateY(-7px) scale(1.035); filter: drop-shadow(0 29px 22px #000b) brightness(1.09); }
-.agent-eye { position: absolute; z-index: 3; left: calc(59.5% + var(--eye-x)); top: calc(16.7% + var(--eye-y)); width: 7px; height: 7px; border-radius: 50%; background: #dce9ff; box-shadow: 0 0 8px 4px #9abaffbd, 0 0 22px 8px #657dff5c; transform: translate(-50%, -50%); transition: left .14s, top .14s; pointer-events: none; }
-.agent-mark { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: #c6d0e8; font: 7px var(--mono); letter-spacing: .16em; }
-.agent-object.is-waving .agent-halo { border-color: #b8c8ff; box-shadow: 0 0 0 28px #b8c8ff0c, 0 0 0 55px #b8c8ff08; }
-.robot-status { background: #dce3f7; color: #111825; box-shadow: none; border: 1px solid #7d89a4; }
+.agent-pupil-left { left: 41.3%; }
+.agent-pupil-right { left: 60.2%; }
+.agent-object:hover .agent-sculpture-wrap, .agent-object.is-waving .agent-sculpture-wrap { filter: drop-shadow(0 24px 36px #000c) brightness(1.045); }
+.agent-object.is-waving .agent-pupil { box-shadow: 0 0 0 2px #a9bcdb4d, 0 0 11px #b8c8ffb7; }
+.agent-mark { display: none; }
+.robot-status { z-index: 4; background: #dce3f7; color: #111825; box-shadow: none; border: 1px solid #7d89a4; }
 .robot-status span { color: #4a5c85; }
-.robot-hint { color: #abb8da; }
-@keyframes agent-breathe { 50% { transform: scale(1.045); opacity: .72; } }
+.robot-hint { z-index: 4; color: #abb8da; top: 43px; left: 18px; right: auto; max-width: 80px; line-height: 1.55; }
+@media (max-width: 600px) {
+  .act-visual-three { height: 315px; }
+  .agent-sculpture-wrap { width: min(94%, 250px); top: 5px; }
+  .robot-hint { display: none; }
+}
 
 /* Each project is framed as a case, with restrained graphic art. */
 .projects { background: #101114; color: #f4f4f2; border-top: 1px solid #34363e; }
@@ -276,7 +281,6 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   .hero-actions { flex-direction: column; align-items: flex-start; }
   .journey-act { min-height: 0; }
   .act-time > span { font-size: 29px; }
-  .agent-object { transform: translate(-50%, -50%) scale(.72) rotate(var(--head-tilt)); }
   .projects-heading h2 { font-size: clamp(57px, 11vw, 80px); }
   .project-orbit { height: 390px; }
   .project-disc { width: min(80vw, 340px); }
@@ -290,8 +294,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 @media (prefers-reduced-motion: reduce) {
   .js .chapter-intro h2:not(.in-view), .js .projects-heading h2:not(.in-view),
   .js .open-source h2:not(.in-view), .js .next h2:not(.in-view) { transform: none; opacity: 1; }
-  .agent-halo { animation: none; }
-  .agent-sculpture { transition: none; }
+  .agent-sculpture-wrap, .agent-pupil { transition: none; }
   .ink-burst::before, .ink-burst::after, .ink-burst i, .ink-burst b { animation-duration: .01ms; }
   .hero-collage, .journey-act .act-visual { transform: none; }
   .project-disc, .case-art { transition: none; }
