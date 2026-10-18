@@ -1,10 +1,10 @@
 # Sakina Farukh Ahmed — Portfolio
 
-A visual, interactive portfolio for web development, software engineering, and AI-focused roles. It tells Sakina's journey through selected projects and open-source work, including an interactive After Query robot.
+A visual, interactive portfolio for web development, software engineering, and AI-focused roles. It tells Sakina's journey through selected projects and open-source work, including an interactive After Query agent sculpture.
 
 ## Files
 
-This is a static website. `index.html`, `styles.css`, and `script.js` contain the site. `sakina-portrait.png`, `favicon.svg`, and `Sakina_Farukh_Ahmed_Resume.pdf` are its assets. No package installation or build step is required.
+This is a static website. `index.html`, `styles.css`, `editorial.css`, and `script.js` contain the site. `sakina-portrait.png`, `favicon.svg`, and `Sakina_Farukh_Ahmed_Resume.pdf` are its assets. No package installation or build step is required.
 
 ## Run locally
 

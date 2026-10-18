@@ -178,3 +178,45 @@ if (robot) {
     waveTimer = setTimeout(() => robot.classList.remove('is-waving'), 1300);
   });
 }
+
+const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+const editorialHeadings = document.querySelectorAll('.chapter-intro h2, .projects-heading h2, .open-source h2, .next h2');
+if ('IntersectionObserver' in window && !motionReduced.matches) {
+  const headingObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        headingObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  editorialHeadings.forEach(heading => headingObserver.observe(heading));
+} else {
+  editorialHeadings.forEach(heading => heading.classList.add('in-view'));
+}
+
+const portraitScene = document.querySelector('.hero-collage');
+const journeyVisuals = Array.from(document.querySelectorAll('.journey-act .act-visual'));
+let motionQueued = false;
+function updateEditorialMotion() {
+  motionQueued = false;
+  if (motionReduced.matches) return;
+  const viewport = window.innerHeight;
+  if (portraitScene && window.scrollY < viewport * 1.3 && window.innerWidth > 850) {
+    portraitScene.style.setProperty('--portrait-y', `${Math.round(window.scrollY * .18)}px`);
+  }
+  journeyVisuals.forEach(visual => {
+    const rect = visual.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > viewport) return;
+    const progress = (rect.top + rect.height / 2 - viewport / 2) / viewport;
+    visual.style.setProperty('--visual-y', `${Math.round(progress * -22)}px`);
+  });
+}
+window.addEventListener('scroll', () => {
+  if (!motionQueued) {
+    requestAnimationFrame(updateEditorialMotion);
+    motionQueued = true;
+  }
+}, { passive: true });
+window.addEventListener('resize', updateEditorialMotion);
+updateEditorialMotion();
