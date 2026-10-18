@@ -23,6 +23,8 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   background: #090a0c;
   min-height: 100svh;
   border-bottom: 1px solid #2f3034;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .hero-noise { opacity: .08; }
 .hero-halo { background: radial-gradient(circle, #5e688421, transparent 64%); }
@@ -31,20 +33,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   background: radial-gradient(circle at 80% 20%, #f6dbe9, transparent 46%),
               radial-gradient(circle at 14% 78%, #dceee7, transparent 52%),
               linear-gradient(125deg, #e6e9ff, #f7e8e7 56%, #e8e1f5);
-  clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 50%));
-  transition: clip-path 1.15s cubic-bezier(.2,.7,.15,1);
+  clip-path: none;
 }
-.hero.is-colorized .hero-color-wash { clip-path: circle(170vmax at var(--reveal-x, 50%) var(--reveal-y, 50%)); }
-.hero.is-colorized { color: #182338; }
-.hero.is-colorized h1 em { color: #182338; }
-.hero.is-colorized h1 em span, .hero.is-colorized .hero-lower p span { color: #6575bc; }
-.hero.is-colorized .hero-lower p, .hero.is-colorized .hero-lower p strong { color: #34405b; }
-.hero.is-colorized .eyebrow, .hero.is-colorized .eyebrow-index, .hero.is-colorized .hero-bottom { color: #435477; }
-.hero.is-colorized .eyebrow-line, .hero.is-colorized .hero-bottom-line { background: #8090b9; }
-.hero.is-colorized .primary-cta { background: #293855; color: #fff; }
-.hero.is-colorized .subtle-link { color: #293855; }
-.hero.is-colorized .hero-sticker { box-shadow: 0 0 0 8px #e5dff0; background: #b9d7cb; }
-.hero.is-colorized .hero-portrait-card { border-color: #b3a7b9; }
+.hero-scratch { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+.hero h1, .hero-lower > p, .hero .eyebrow, .hero-bottom { text-shadow: 0 2px 8px #090a0c99; }
 .hero-inner { z-index: 3; padding-top: clamp(70px, 10vh, 120px); }
 .hero h1 {
   font-weight: 700;
@@ -62,9 +54,9 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .hero-lower p strong { color: #fff; }
 .hero-lower p span { color: #b8c8ff; }
 .hero-collage {
-  right: 3%; top: 13%; width: 31%; height: 70%; opacity: 1;
+  z-index: 4; right: 3%; top: 13%; width: 31%; height: 70%; opacity: 1;
   transform: translate3d(0, var(--portrait-y, 0px), 0);
-  will-change: transform; pointer-events: auto;
+  will-change: transform; pointer-events: none;
 }
 .hero-portrait-card {
   top: 0; right: 0; width: min(100%, 385px); height: min(100%, 530px);
@@ -72,19 +64,18 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   border: 1px solid #777b85; overflow: hidden;
 }
 .hero-portrait-card::after {
-  content: ''; position: absolute; inset: 0;
+  content: ''; position: absolute; inset: 0; z-index: 2;
   background: linear-gradient(180deg, #090a0c00 42%, #090a0cd9 100%);
   pointer-events: none;
 }
 .hero-portrait-card img {
   width: 100%; height: 100%; object-fit: cover; object-position: 52% 36%;
-  filter: grayscale(1) contrast(1.13) brightness(.79);
+  filter: contrast(1.02) brightness(.98);
   aspect-ratio: auto;
-  transition: filter .9s ease, transform 1.1s cubic-bezier(.2,.7,.2,1);
 }
-.hero-portrait-card:hover img, .hero.is-colorized .hero-portrait-card img { filter: grayscale(0) contrast(1.02) brightness(.98); transform: scale(1.035); }
+.hero-portrait-scratch { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
 .hero-portrait-card span {
-  position: absolute; z-index: 2; bottom: 24px; left: 23px; margin: 0;
+  position: absolute; z-index: 3; bottom: 24px; left: 23px; margin: 0;
   color: #fff; font: 10px var(--mono); letter-spacing: .14em;
 }
 .hero-index {
@@ -329,7 +320,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .project-tech span { background: #292d34; }
 .project-links a:hover { color: #b8c8ff; }
 
-.open-source { background: #ededeb; color: #090a0c; isolation: isolate; cursor: crosshair; }
+.open-source { background: #ededeb; color: #090a0c; isolation: isolate; cursor: crosshair; user-select: none; -webkit-user-select: none; }
 .open-source .open-source-glow { z-index: -2; }
 .ink-field { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .ink-field canvas { display: block; }

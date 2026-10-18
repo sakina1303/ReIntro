@@ -252,15 +252,23 @@ if (openSource && inkCanvas) {
       const stroke = strokes[i];
       const age = now - stroke.time;
       if (age > inkLife) { strokes.splice(i, 1); continue; }
-      ink.beginPath();
-      ink.moveTo(stroke.x1, stroke.y1);
-      ink.lineTo(stroke.x2, stroke.y2);
-      ink.strokeStyle = `rgba(109, 93, 177, ${(.68 * (1 - age / inkLife)).toFixed(3)})`;
-      ink.lineWidth = 6 + 2 * (1 - age / inkLife);
-      ink.lineCap = 'round';
-      ink.lineJoin = 'round';
-      ink.stroke();
+      const fade = 1 - age / inkLife;
+      [[96, .09, '#7966c9'], [66, .13, '#9080da'], [38, .22, '#a393e4'], [19, .24, '#c1b3ee']].forEach(([width, opacity, color]) => {
+        ink.beginPath();
+        ink.moveTo(stroke.x1, stroke.y1);
+        ink.lineTo(stroke.x2, stroke.y2);
+        ink.strokeStyle = color;
+        ink.globalAlpha = opacity * fade;
+        ink.lineWidth = width;
+        ink.lineCap = 'round';
+        ink.lineJoin = 'round';
+        ink.shadowColor = color;
+        ink.shadowBlur = width * .42;
+        ink.stroke();
+      });
     }
+    ink.globalAlpha = 1;
+    ink.shadowBlur = 0;
     if (strokes.length) inkFrame = requestAnimationFrame(drawInk);
   }
   function addInk(x, y, connect = true) {
@@ -269,7 +277,7 @@ if (openSource && inkCanvas) {
       const distance = Math.hypot(x - lastInkPoint.x, y - lastInkPoint.y);
       if (distance > 2 && distance < 100) {
         strokes.push({ x1: lastInkPoint.x, y1: lastInkPoint.y, x2: x, y2: y, time: now });
-        if (strokes.length > 700) strokes.shift();
+        if (strokes.length > 350) strokes.shift();
         if (!inkFrame) inkFrame = requestAnimationFrame(drawInk);
       }
     }
@@ -289,10 +297,8 @@ if (openSource && inkCanvas) {
     const bounds = openSource.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    lastInkPoint = { x: x - 12, y: y + 8 };
-    addInk(x + 12, y - 8);
-    lastInkPoint = { x: x - 6, y: y - 11 };
-    addInk(x + 6, y + 11);
+    lastInkPoint = { x: x - 1, y };
+    addInk(x + 1, y);
     lastInkPoint = null;
   }, { passive: true });
 }
@@ -337,13 +343,86 @@ if (questionArt && questionText) {
 }
 
 const hero = document.querySelector('.hero');
-if (hero) {
-  hero.addEventListener('click', event => {
+const heroScratch = document.getElementById('hero-scratch');
+const portraitScratch = document.getElementById('hero-portrait-scratch');
+const portraitCard = document.querySelector('.hero-portrait-card');
+const portraitImage = portraitCard?.querySelector('img');
+if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
+  const backgroundInk = heroScratch.getContext('2d');
+  const portraitInk = portraitScratch.getContext('2d');
+  let lastScratchPoint = null;
+  function sizeScratchCanvas(canvas, context, width, height) {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  function paintPortraitMono() {
+    const bounds = portraitCard.getBoundingClientRect();
+    if (!bounds.width || !bounds.height || !portraitImage.complete || !portraitImage.naturalWidth) return;
+    sizeScratchCanvas(portraitScratch, portraitInk, bounds.width, bounds.height);
+    const sourceWidth = portraitImage.naturalWidth;
+    const sourceHeight = portraitImage.naturalHeight;
+    const coverScale = Math.max(bounds.width / sourceWidth, bounds.height / sourceHeight);
+    const cropWidth = bounds.width / coverScale;
+    const cropHeight = bounds.height / coverScale;
+    const sourceX = (sourceWidth - cropWidth) * .52;
+    const sourceY = (sourceHeight - cropHeight) * .36;
+    portraitInk.filter = 'grayscale(1) contrast(1.13) brightness(.79)';
+    portraitInk.drawImage(portraitImage, sourceX, sourceY, cropWidth, cropHeight, 0, 0, bounds.width, bounds.height);
+    portraitInk.filter = 'none';
+  }
+  function prepareScratch() {
     const bounds = hero.getBoundingClientRect();
-    hero.style.setProperty('--reveal-x', `${event.clientX - bounds.left}px`);
-    hero.style.setProperty('--reveal-y', `${event.clientY - bounds.top}px`);
-    hero.classList.toggle('is-colorized');
-  });
+    sizeScratchCanvas(heroScratch, backgroundInk, bounds.width, bounds.height);
+    backgroundInk.fillStyle = '#090a0c';
+    backgroundInk.fillRect(0, 0, bounds.width, bounds.height);
+    paintPortraitMono();
+  }
+  function dab(context, x, y, radius) {
+    context.save();
+    context.globalCompositeOperation = 'destination-out';
+    const feather = context.createRadialGradient(x, y, radius * .22, x, y, radius);
+    feather.addColorStop(0, 'rgba(0,0,0,1)');
+    feather.addColorStop(.56, 'rgba(0,0,0,.94)');
+    feather.addColorStop(1, 'rgba(0,0,0,0)');
+    context.fillStyle = feather;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+  function scratchAt(x, y) {
+    dab(backgroundInk, x, y, 68);
+    const heroBounds = hero.getBoundingClientRect();
+    const portraitBounds = portraitCard.getBoundingClientRect();
+    const imageX = x + heroBounds.left - portraitBounds.left;
+    const imageY = y + heroBounds.top - portraitBounds.top;
+    if (imageX > -36 && imageY > -36 && imageX < portraitBounds.width + 36 && imageY < portraitBounds.height + 36) {
+      dab(portraitInk, imageX, imageY, 48);
+    }
+  }
+  function scratch(event) {
+    if (motionReduced.matches || (event.pointerType === 'touch' && !event.buttons)) return;
+    const bounds = hero.getBoundingClientRect();
+    const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    if (lastScratchPoint) {
+      const distance = Math.hypot(point.x - lastScratchPoint.x, point.y - lastScratchPoint.y);
+      const steps = Math.min(30, Math.ceil(distance / 17));
+      for (let step = 1; step <= steps; step++) {
+        const t = step / steps;
+        scratchAt(lastScratchPoint.x + (point.x - lastScratchPoint.x) * t, lastScratchPoint.y + (point.y - lastScratchPoint.y) * t);
+      }
+    } else scratchAt(point.x, point.y);
+    lastScratchPoint = point;
+  }
+  prepareScratch();
+  if (!portraitImage.complete) portraitImage.addEventListener('load', paintPortraitMono, { once: true });
+  if ('ResizeObserver' in window) new ResizeObserver(prepareScratch).observe(hero);
+  else window.addEventListener('resize', prepareScratch);
+  hero.addEventListener('pointermove', scratch, { passive: true });
+  hero.addEventListener('pointerdown', scratch, { passive: true });
+  hero.addEventListener('pointerleave', () => { lastScratchPoint = null; });
 }
 const editorialHeadings = document.querySelectorAll('.chapter-intro h2, .projects-heading h2, .open-source h2, .next h2');
 if ('IntersectionObserver' in window && !motionReduced.matches) {
