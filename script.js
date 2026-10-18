@@ -155,6 +155,9 @@ if (robot) {
   let robotState = 0;
   let waveTimer;
   let touchResetTimer;
+  let gestureTimers = [];
+  let gestureLocked = false;
+  const setPose = pose => { robot.dataset.pose = pose; };
   const moveSculpture = event => {
     const rect = robot.getBoundingClientRect();
     const dx = Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2)));
@@ -164,6 +167,7 @@ if (robot) {
     robot.style.setProperty('--body-x', `${(dx * 18).toFixed(1)}px`);
     robot.style.setProperty('--body-y', `${(dy * 12).toFixed(1)}px`);
     robot.style.setProperty('--head-tilt', `${(dx * 2.5).toFixed(1)}deg`);
+    if (!gestureLocked) setPose(dy < -.24 ? 'reaching' : 'listening');
   };
   const resetSculpture = () => {
     robot.style.setProperty('--eye-x', '0px');
@@ -181,7 +185,10 @@ if (robot) {
     }
   }, { passive: true });
   robot.addEventListener('pointerleave', event => {
-    if (event.pointerType === 'mouse') resetSculpture();
+    if (event.pointerType === 'mouse') {
+      resetSculpture();
+      if (!gestureLocked) setPose('idle');
+    }
   });
   robot.addEventListener('click', () => {
     robotState = (robotState + 1) % robotSequence.length;
@@ -190,8 +197,20 @@ if (robot) {
     robot.classList.remove('is-waving');
     void robot.offsetWidth;
     robot.classList.add('is-waving');
+    gestureTimers.forEach(clearTimeout);
+    gestureLocked = true;
+    setPose('listening');
+    gestureTimers = [
+      setTimeout(() => setPose('reaching'), 160),
+      setTimeout(() => setPose('listening'), 900),
+      setTimeout(() => {
+        gestureLocked = false;
+        setPose('idle');
+        resetSculpture();
+      }, 1450)
+    ];
     clearTimeout(waveTimer);
-    waveTimer = setTimeout(() => robot.classList.remove('is-waving'), 1300);
+    waveTimer = setTimeout(() => robot.classList.remove('is-waving'), 1450);
   });
 }
 

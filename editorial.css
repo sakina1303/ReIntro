@@ -115,7 +115,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .journey-close { border-color: #b9bab8; }
 
 /* A cutout AI sculpture: the portrait and its eyes move on separate planes. */
-.act-visual-three { height: 420px; background: #090a0c; border: 0; }
+.act-visual-three { height: 500px; background: #090a0c; border: 0; }
 .robot-scene { background: #090a0c; }
 .robot-scene::before {
   content: ''; position: absolute; inset: 0;
@@ -131,22 +131,43 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   border: 0; background: transparent; padding: 0; cursor: crosshair; overflow: hidden;
 }
 .agent-sculpture-wrap {
-  position: absolute; width: min(76%, 300px); aspect-ratio: 2 / 3; left: 50%; top: 5px;
+  position: absolute; width: min(84%, 328px); aspect-ratio: 2 / 3; left: 50%; top: 5px;
   transform: translateX(calc(-50% + var(--body-x))) translateY(var(--body-y)) rotate(var(--head-tilt));
-  transform-origin: 50% 78%; transition: transform .34s cubic-bezier(.2,.8,.2,1), filter .35s;
+  transform-origin: 50% 78%; transition: transform .48s cubic-bezier(.2,.8,.2,1), filter .35s;
   filter: drop-shadow(0 20px 32px #0009);
 }
+.agent-pose { position: absolute; inset: 0; opacity: 0; transform: translateY(8px) scale(.985); transition: opacity .09s ease, transform .45s cubic-bezier(.2,.8,.2,1); }
+.agent-object[data-pose="idle"] .agent-pose-idle,
+.agent-object[data-pose="listening"] .agent-pose-listening,
+.agent-object[data-pose="reaching"] .agent-pose-reaching { opacity: 1; transform: translateY(0) scale(1); }
 .agent-sculpture { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .agent-pupil {
-  position: absolute; z-index: 2; width: 2.45%; aspect-ratio: 1; top: 26.1%;
-  border-radius: 50%; border: 1px solid #80848c;
-  background: radial-gradient(circle at 45% 42%, #252a35 0 24%, #59616c 42%, #242932 68%, #87909b 100%);
-  box-shadow: 0 0 0 1px #2d344159, 0 0 6px #9eacb76b;
+  position: absolute; z-index: 2; width: 2.4%; aspect-ratio: 1; top: 14.9%;
+  border-radius: 50%; border: 1px solid #777d88;
+  background: radial-gradient(circle at 45% 42%, #1f2630 0 27%, #65707d 54%, #252c37 74%, #a7adb2 100%);
+  box-shadow: 0 0 0 1px #2d344159, 0 0 5px #9eacb76b;
   transform: translate(calc(-50% + var(--eye-x)), calc(-50% + var(--eye-y)));
   transition: transform .12s ease-out; pointer-events: none;
 }
-.agent-pupil-left { left: 41.3%; }
-.agent-pupil-right { left: 60.2%; }
+.agent-pose-idle .agent-pupil-left { left: 45.1%; }
+.agent-pose-idle .agent-pupil-right { left: 55.6%; }
+.agent-pose-listening .agent-pupil-left { left: 49.5%; }
+.agent-pose-listening .agent-pupil-right { left: 59.8%; }
+.agent-pose-reaching .agent-pupil { top: 16%; }
+.agent-pose-reaching .agent-pupil-left { left: 48.4%; }
+.agent-pose-reaching .agent-pupil-right { left: 59.4%; }
+.agent-trails { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+.agent-trails path { fill: none; stroke: #aebdf3; stroke-width: 1.3; stroke-linecap: round; stroke-dasharray: 270; stroke-dashoffset: 270; }
+.agent-trails path:nth-child(2) { stroke: #d4b0b9; }
+.agent-trails path:nth-child(3) { stroke: #a9d7ca; }
+.agent-trails circle { fill: #d7defd; opacity: 0; }
+.agent-object.is-waving .agent-trails { opacity: 1; }
+.agent-object.is-waving .agent-trails path { animation: agent-trail 1.15s ease-out both; }
+.agent-object.is-waving .agent-trails path:nth-child(2) { animation-delay: .1s; }
+.agent-object.is-waving .agent-trails path:nth-child(3) { animation-delay: .2s; }
+.agent-object.is-waving .agent-trails circle { animation: agent-spark .9s .2s ease-out both; }
+@keyframes agent-trail { 0% { stroke-dashoffset: 270; opacity: 0; } 25% { opacity: .85; } 72% { stroke-dashoffset: 0; opacity: .85; } 100% { stroke-dashoffset: -120; opacity: 0; } }
+@keyframes agent-spark { 0%,100% { opacity: 0; transform: scale(.4); } 45% { opacity: 1; transform: scale(1.3); } }
 .agent-object:hover .agent-sculpture-wrap, .agent-object.is-waving .agent-sculpture-wrap { filter: drop-shadow(0 24px 36px #000c) brightness(1.045); }
 .agent-object.is-waving .agent-pupil { box-shadow: 0 0 0 2px #a9bcdb4d, 0 0 11px #b8c8ffb7; }
 .agent-mark { display: none; }
@@ -154,7 +175,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .robot-status span { color: #4a5c85; }
 .robot-hint { z-index: 4; color: #abb8da; top: 43px; left: 18px; right: auto; max-width: 80px; line-height: 1.55; }
 @media (max-width: 600px) {
-  .act-visual-three { height: 315px; }
+  .act-visual-three { height: 390px; }
   .agent-sculpture-wrap { width: min(94%, 250px); top: 5px; }
   .robot-hint { display: none; }
 }
@@ -294,7 +315,8 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 @media (prefers-reduced-motion: reduce) {
   .js .chapter-intro h2:not(.in-view), .js .projects-heading h2:not(.in-view),
   .js .open-source h2:not(.in-view), .js .next h2:not(.in-view) { transform: none; opacity: 1; }
-  .agent-sculpture-wrap, .agent-pupil { transition: none; }
+  .agent-sculpture-wrap, .agent-pose, .agent-pupil { transition: none; }
+  .agent-object.is-waving .agent-trails path, .agent-object.is-waving .agent-trails circle { animation: none; }
   .ink-burst::before, .ink-burst::after, .ink-burst i, .ink-burst b { animation-duration: .01ms; }
   .hero-collage, .journey-act .act-visual { transform: none; }
   .project-disc, .case-art { transition: none; }
