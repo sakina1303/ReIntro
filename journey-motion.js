@@ -361,19 +361,34 @@
     const horizontalScale = Math.min(splashWidth / 870, 1.18) * (.12 + grow * .88);
     const verticalScale = splashHeight / 580 * (.12 + grow * .88);
     splashCtx.save();
-    // Two lighter smoke wings bloom from the same impact, then disappear with it.
-    const wingWidth = Math.min(splashWidth * .38, 490) * (.08 + grow * .92);
-    const wingHeight = splashHeight * .62 * (.12 + grow * .88);
-    const wingTop = 20 + (1 - grow) * 26;
+    // Soft radial puffs spread outward from the impact. Each puff fades to a
+    // transparent edge, so the smoke never exposes a cropped canvas rectangle.
+    const wingReach = Math.min(splashWidth * .34, 430);
     for (const side of [-1, 1]) {
-      const sourceX = side < 0 ? 20 : 620;
-      const x = side < 0 ? origin - wingWidth * .94 : origin - wingWidth * .06;
-      splashCtx.globalAlpha = opacity * .27;
-      splashCtx.filter = 'blur(24px)';
-      splashCtx.drawImage(powderTexture, sourceX, 48, 560, 480, x, wingTop, wingWidth, wingHeight);
-      splashCtx.filter = 'none';
-      splashCtx.globalAlpha = opacity * .53;
-      splashCtx.drawImage(powderTexture, sourceX, 48, 560, 480, x, wingTop, wingWidth, wingHeight);
+      for (let i = 0; i < 10; i++) {
+        const spread = (i + .35) / 10;
+        const x = origin + side * (24 + wingReach * spread * grow);
+        const y = 38 + splashHeight * (.12 + spread * .44) * grow;
+        const radiusX = (54 + spread * 74) * (.3 + grow * .7);
+        const radiusY = (66 + spread * 92) * (.3 + grow * .7);
+        const color = side < 0
+          ? (i % 3 === 0 ? [155, 103, 239] : [239, 68, 171])
+          : (i % 3 === 0 ? [80, 215, 213] : [255, 188, 92]);
+        splashCtx.save();
+        splashCtx.translate(x, y);
+        splashCtx.rotate(side * (.28 + spread * .22));
+        splashCtx.scale(radiusX, radiusY);
+        const haze = splashCtx.createRadialGradient(0, 0, .03, 0, 0, 1);
+        haze.addColorStop(0, `rgba(${color.join(',')},.17)`);
+        haze.addColorStop(.42, `rgba(${color.join(',')},.11)`);
+        haze.addColorStop(1, `rgba(${color.join(',')},0)`);
+        splashCtx.globalAlpha = opacity * (.75 - spread * .24);
+        splashCtx.fillStyle = haze;
+        splashCtx.beginPath();
+        splashCtx.arc(0, 0, 1, 0, Math.PI * 2);
+        splashCtx.fill();
+        splashCtx.restore();
+      }
     }
     splashCtx.globalAlpha = opacity * .3;
     splashCtx.filter = 'blur(22px)';
