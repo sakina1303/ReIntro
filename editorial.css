@@ -150,6 +150,17 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .hero-bottom-line { background: #6a6d76; }
 
 .journey { background: #eeeeeb; }
+.journey { isolation: isolate; }
+.journey-motion { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; pointer-events: none; }
+.journey .chapter-intro, .journey .journey-track, .journey .journey-close { position: relative; z-index: 2; }
+.journey .act-content, .journey .act-visual, .journey .act-time { position: relative; z-index: 2; }
+.journey .act-content > p:not(.act-kicker), .journey .chapter-deck { text-shadow: 0 1px 0 #eeeeeb, 0 -1px 0 #eeeeeb; }
+.projects { isolation: isolate; }
+.project-splash { position: absolute; z-index: 2; left: 0; top: 0; width: 100%; height: clamp(310px, 66vw, 600px); pointer-events: none; }
+.projects > :not(.project-splash) { position: relative; z-index: 1; }
+.projects > .projects-heading { z-index: 3; }
+.projects-heading h2, .projects-heading > p { text-shadow: 0 2px 5px #090a0c, 0 0 20px #090a0c; }
+.projects-heading > p:last-child { color: #f1eff8; }
 .chapter-intro h2, .projects-heading h2, .open-source h2, .next h2 {
   letter-spacing: -.09em; line-height: .9;
 }
