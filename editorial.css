@@ -514,7 +514,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .next-cta { background: #090a0c; color: #fff; }
 .next-cta:hover { background: #273961; color: #fff; }
 .next-ring { display: none; }
-.next-art { cursor: pointer; isolation: isolate; outline-offset: -12px; }
+.next-art { cursor: pointer; isolation: isolate; outline-offset: -12px; touch-action: none; }
+.question-water { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; pointer-events: none; }
+.question-stage::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: var(--wetness, 0); background: radial-gradient(ellipse at 27% 22%, #fff9 0%, transparent 42%), radial-gradient(ellipse at 78% 78%, #8de4ff55 0%, transparent 48%), linear-gradient(125deg, transparent 17%, #ffffff80 31%, transparent 42%, #e9faff66 68%, transparent 83%); mix-blend-mode: screen; transition: opacity .3s; }
+.question-stage > * { position: relative; z-index: 1; }
 .question-bubbles { position: absolute; z-index: 1; left: 50%; top: 50%; width: min(82vw, 390px); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
 .question-bubbles i { position: absolute; display: block; width: var(--bubble-size); aspect-ratio: 1; bottom: var(--bubble-bottom); border: 1.5px solid #f8f4ffcf; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #ffffffed 0 8%, #f5ecffb8 16%, #ddd2ff80 46%, #7e82bd3d 82%); box-shadow: inset -3px -4px 7px #626ba75c, 0 4px 13px #6b76b542; opacity: 0; animation: question-bubble-rise var(--bubble-time) ease-in-out infinite; animation-delay: var(--bubble-delay); }
 .question-bubbles i:nth-child(1) { left: -3%; --bubble-size: 25px; --bubble-bottom: 16%; --bubble-time: 4.2s; --bubble-delay: -1.4s; --bubble-drift: -36px; }
@@ -621,6 +624,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
   .hero-color-wash, .hero-portrait-card img, .question-stage { transition: none; }
   .next-core.is-entering { animation: none; }
   .question-bubbles i { animation: none; opacity: .55; transform: translateY(-35px); }
+  .question-water { display: none; }
   .hero-collage, .journey-act .act-visual { transform: none; }
   .project-disc, .case-art { transition: none; }
 }
