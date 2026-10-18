@@ -97,6 +97,15 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .act-content h3 { letter-spacing: -.065em; }
 .act-content > p:not(.act-kicker) { color: #55575c; }
 .act-tags span { border-color: #b5b8bf; background: transparent; color: #434956; }
+.act-content > p.freelance-note {
+  max-width: 500px; margin-top: 24px; padding-top: 17px;
+  border-top: 1px solid #c7c8c3; color: #414650;
+  font-size: 14px; line-height: 1.55;
+}
+.freelance-note span {
+  color: #5b6da1; font: 10px var(--mono); letter-spacing: .07em;
+  margin-right: 7px; white-space: nowrap;
+}
 .act-visual { border-radius: 0; border: 1px solid #aeb0af; }
 .act-visual-one { background: #d9dadd; }
 .act-visual-two { background: #d6d8dc; }
