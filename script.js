@@ -385,7 +385,10 @@ if (openPuzzle) {
 
   function renderPuzzle() {
     const count = placed.filter(value => value !== null).length;
-    instruction.textContent = `${puzzleItems[activePuzzle].title} · Join four fragments to complete the logo.`;
+    const puzzleCaption = `${puzzleItems[activePuzzle].title} · Join four fragments to complete the logo.`;
+    instruction.textContent = puzzleCaption;
+    instruction.hidden = count === 4;
+    result.textContent = puzzleCaption;
     puzzleIndex.textContent = `${String(activePuzzle + 1).padStart(2, '0')} / 04`;
     if (completeLogo.dataset.icon !== puzzleItems[activePuzzle].icon) {
       completeLogo.src = `assets/brand-icons/${puzzleItems[activePuzzle].icon}`;
