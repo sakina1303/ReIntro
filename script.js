@@ -232,9 +232,9 @@ const inkCanvas = document.getElementById('ink-canvas');
 if (openSource && inkCanvas) {
   const ink = inkCanvas.getContext('2d');
   const strokes = [];
-  let lastInkPoint = null;
+  let activeInkStroke = null;
   let inkFrame = 0;
-  const inkLife = 3800;
+  const inkLife = 4200;
   function sizeInkCanvas() {
     const bounds = openSource.getBoundingClientRect();
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -244,44 +244,55 @@ if (openSource && inkCanvas) {
     inkCanvas.style.height = `${bounds.height}px`;
     ink.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
+  function inkPath(points) {
+    const path = new Path2D();
+    path.moveTo(points[0].x, points[0].y);
+    if (points.length === 1) path.lineTo(points[0].x + .01, points[0].y);
+    for (let i = 1; i < points.length - 1; i++) {
+      const midpoint = { x: (points[i].x + points[i + 1].x) / 2, y: (points[i].y + points[i + 1].y) / 2 };
+      path.quadraticCurveTo(points[i].x, points[i].y, midpoint.x, midpoint.y);
+    }
+    if (points.length > 1) path.lineTo(points.at(-1).x, points.at(-1).y);
+    return path;
+  }
   function drawInk(now) {
     inkFrame = 0;
     const bounds = openSource.getBoundingClientRect();
     ink.clearRect(0, 0, bounds.width, bounds.height);
     for (let i = strokes.length - 1; i >= 0; i--) {
       const stroke = strokes[i];
-      const age = now - stroke.time;
+      const age = now - stroke.updated;
       if (age > inkLife) { strokes.splice(i, 1); continue; }
       const fade = 1 - age / inkLife;
-      [[96, .09, '#7966c9'], [66, .13, '#9080da'], [38, .22, '#a393e4'], [19, .24, '#c1b3ee']].forEach(([width, opacity, color]) => {
-        ink.beginPath();
-        ink.moveTo(stroke.x1, stroke.y1);
-        ink.lineTo(stroke.x2, stroke.y2);
-        ink.strokeStyle = color;
-        ink.globalAlpha = opacity * fade;
-        ink.lineWidth = width;
+      const path = inkPath(stroke.points);
+      for (let layer = 0; layer < 12; layer++) {
+        ink.strokeStyle = layer < 6 ? '#a18bdf' : '#856dd4';
+        ink.globalAlpha = (.025 + layer * .004) * fade;
+        ink.lineWidth = 160 - layer * 11;
         ink.lineCap = 'round';
         ink.lineJoin = 'round';
-        ink.shadowColor = color;
-        ink.shadowBlur = width * .42;
-        ink.stroke();
-      });
+        ink.shadowColor = '#927add';
+        ink.shadowBlur = 12;
+        ink.stroke(path);
+      }
     }
     ink.globalAlpha = 1;
     ink.shadowBlur = 0;
     if (strokes.length) inkFrame = requestAnimationFrame(drawInk);
   }
-  function addInk(x, y, connect = true) {
+  function addInk(x, y) {
     const now = performance.now();
-    if (connect && lastInkPoint) {
-      const distance = Math.hypot(x - lastInkPoint.x, y - lastInkPoint.y);
-      if (distance > 2 && distance < 100) {
-        strokes.push({ x1: lastInkPoint.x, y1: lastInkPoint.y, x2: x, y2: y, time: now });
-        if (strokes.length > 350) strokes.shift();
-        if (!inkFrame) inkFrame = requestAnimationFrame(drawInk);
-      }
+    const previous = activeInkStroke?.points.at(-1);
+    const distance = previous ? Math.hypot(x - previous.x, y - previous.y) : Infinity;
+    if (!activeInkStroke || distance > 160 || activeInkStroke.points.length >= 140) {
+      activeInkStroke = { points: [{ x, y }], updated: now };
+      strokes.push(activeInkStroke);
+      if (strokes.length > 12) strokes.shift();
+    } else if (distance > 1) {
+      activeInkStroke.points.push({ x, y });
+      activeInkStroke.updated = now;
     }
-    lastInkPoint = { x, y };
+    if (!inkFrame) inkFrame = requestAnimationFrame(drawInk);
   }
   sizeInkCanvas();
   if ('ResizeObserver' in window) new ResizeObserver(sizeInkCanvas).observe(openSource);
@@ -291,15 +302,14 @@ if (openSource && inkCanvas) {
     const bounds = openSource.getBoundingClientRect();
     addInk(event.clientX - bounds.left, event.clientY - bounds.top);
   }, { passive: true });
-  openSource.addEventListener('pointerleave', () => { lastInkPoint = null; });
+  openSource.addEventListener('pointerleave', () => { activeInkStroke = null; });
   openSource.addEventListener('pointerdown', event => {
     if (motionReduced.matches || (event.pointerType === 'mouse' && event.button !== 0)) return;
     const bounds = openSource.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    lastInkPoint = { x: x - 1, y };
-    addInk(x + 1, y);
-    lastInkPoint = null;
+    activeInkStroke = null;
+    addInk(x, y);
   }, { passive: true });
 }
 
