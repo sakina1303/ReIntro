@@ -175,6 +175,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .robot-status { z-index: 4; background: #dce3f7; color: #111825; box-shadow: none; border: 1px solid #7d89a4; }
 .robot-status span { color: #4a5c85; }
 .robot-hint { z-index: 4; color: #abb8da; top: 43px; left: 18px; right: auto; max-width: 80px; line-height: 1.55; }
+@media (min-width: 601px) and (max-width: 1100px) {
+  .act-visual-three { height: 440px; }
+  .agent-sculpture-wrap { width: min(100%, 295px); }
+}
 @media (max-width: 600px) {
   .act-visual-three { height: 390px; }
   .agent-sculpture-wrap { width: min(94%, 250px); top: 5px; }
