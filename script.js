@@ -374,10 +374,12 @@ if (openPuzzle) {
   const result = document.getElementById('puzzle-result');
   const instruction = document.getElementById('puzzle-instruction');
   const puzzleIndex = document.getElementById('puzzle-index');
+  const completeLogo = document.getElementById('puzzle-complete-logo');
   const placed = [null, null, null, null];
   let selected = null;
   let drag = null;
   let suppressClickId = null;
+  let placing = false;
 
   if (new URLSearchParams(location.search).get('complete') === '1') placed.splice(0, 4, 0, 1, 2, 3);
 
@@ -385,19 +387,30 @@ if (openPuzzle) {
     const count = placed.filter(value => value !== null).length;
     instruction.textContent = `${puzzleItems[activePuzzle].title} · Join four fragments to complete the logo.`;
     puzzleIndex.textContent = `${String(activePuzzle + 1).padStart(2, '0')} / 04`;
+    if (completeLogo.dataset.icon !== puzzleItems[activePuzzle].icon) {
+      completeLogo.src = `assets/brand-icons/${puzzleItems[activePuzzle].icon}`;
+      completeLogo.dataset.icon = puzzleItems[activePuzzle].icon;
+    }
     slots.forEach((slot, index) => {
       const filled = placed[index] !== null;
-      slot.replaceChildren();
-      slot.classList.remove('is-mismatch');
+      const tileState = `${activePuzzle}-${filled}`;
+      if (slot.dataset.tileState !== tileState) {
+        slot.replaceChildren(puzzleShape(index, filled));
+        slot.dataset.tileState = tileState;
+      }
+      slot.classList.remove('is-mismatch', 'is-placed');
       slot.classList.toggle('is-filled', filled);
       slot.classList.toggle('is-ready', selected === index && !filled);
       slot.setAttribute('aria-label', filled ? `${puzzleItems[activePuzzle].title} fragment ${index + 1} placed. Tap to return it.` : `Empty space ${index + 1}. Fits fragment ${index + 1}.`);
-      slot.append(puzzleShape(index, filled));
     });
     pieces.forEach(piece => {
       const index = Number(piece.dataset.piece);
-      piece.replaceChildren(puzzleShape(index, true));
+      if (piece.dataset.renderedPuzzle !== String(activePuzzle)) {
+        piece.replaceChildren(puzzleShape(index, true));
+        piece.dataset.renderedPuzzle = String(activePuzzle);
+      }
       piece.hidden = placed.includes(index);
+      piece.style.opacity = '';
       piece.classList.toggle('is-selected', index === selected);
       piece.setAttribute('aria-label', `${puzzleItems[activePuzzle].title} logo fragment ${index + 1}`);
       piece.setAttribute('aria-pressed', String(index === selected));
@@ -408,7 +421,8 @@ if (openPuzzle) {
     status.textContent = count === 4 ? `4 / 4 · ${puzzleItems[activePuzzle].title} is complete` : `${count} / 4 · Assemble the ${puzzleItems[activePuzzle].title} logo`;
   }
 
-  function placePiece(id, index) {
+  function placePiece(id, index, fromRect = null) {
+    if (placing) return;
     if (!Number.isInteger(id) || id < 0 || id > 3) return;
     if (id !== index) {
       const slot = slots[index];
@@ -418,14 +432,44 @@ if (openPuzzle) {
       status.textContent = 'That shape belongs in another space · Try again';
       return;
     }
-    const previous = placed.indexOf(id);
-    if (previous !== -1) placed[previous] = null;
-    placed[index] = id;
-    selected = null;
-    renderPuzzle();
+    const piece = pieces.find(candidate => Number(candidate.dataset.piece) === id);
+    const source = fromRect || piece.getBoundingClientRect();
+    const target = slots[index].getBoundingClientRect();
+    const commit = () => {
+      const previous = placed.indexOf(id);
+      if (previous !== -1) placed[previous] = null;
+      placed[index] = id;
+      selected = null;
+      placing = false;
+      renderPuzzle();
+      const slot = slots[index];
+      slot.classList.remove('is-placed');
+      void slot.offsetWidth;
+      slot.classList.add('is-placed');
+    };
+    if (motionReduced.matches) { commit(); return; }
+    placing = true;
+    const ghost = piece.cloneNode(true);
+    ghost.classList.add('puzzle-flying');
+    ghost.style.left = `${source.left}px`;
+    ghost.style.top = `${source.top}px`;
+    ghost.style.width = `${source.width}px`;
+    ghost.style.height = `${source.height}px`;
+    ghost.style.setProperty('--piece-color', getComputedStyle(piece).getPropertyValue('--piece-color'));
+    document.body.append(ghost);
+    piece.style.opacity = '.15';
+    const dx = target.left + target.width / 2 - source.left - source.width / 2;
+    const dy = target.top + target.height / 2 - source.top - source.height / 2;
+    const grow = target.width / source.width;
+    const flight = ghost.animate([
+      { transform: 'translate(0, 0) rotate(-5deg) scale(1)' },
+      { transform: `translate(${dx}px, ${dy}px) rotate(0deg) scale(${grow})` }
+    ], { duration: 460, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    flight.finished.catch(() => {}).then(() => { ghost.remove(); commit(); });
   }
 
   function switchPuzzle(direction) {
+    if (placing) return;
     activePuzzle = (activePuzzle + direction + puzzleItems.length) % puzzleItems.length;
     placed.fill(null);
     selected = null;
@@ -439,13 +483,14 @@ if (openPuzzle) {
 
   pieces.forEach(piece => {
     piece.addEventListener('click', () => {
+      if (placing) return;
       const id = Number(piece.dataset.piece);
       if (suppressClickId === id) { suppressClickId = null; return; }
       selected = selected === id ? null : id;
       renderPuzzle();
     });
     piece.addEventListener('pointerdown', event => {
-      if (event.button !== 0) return;
+      if (placing || event.button !== 0) return;
       drag = { piece, id: Number(piece.dataset.piece), x: event.clientX, y: event.clientY, moved: false };
     });
   });
@@ -466,6 +511,7 @@ if (openPuzzle) {
     if (!drag) return;
     const { piece, id, moved } = drag;
     const target = moved ? document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot') : null;
+    const fromRect = piece.getBoundingClientRect();
     piece.classList.remove('is-dragging');
     piece.style.removeProperty('--drag-x');
     piece.style.removeProperty('--drag-y');
@@ -474,13 +520,14 @@ if (openPuzzle) {
     if (moved) {
       suppressClickId = id;
       setTimeout(() => { suppressClickId = null; }, 0);
-      if (target) placePiece(id, Number(target.dataset.slot));
+      if (target) placePiece(id, Number(target.dataset.slot), fromRect);
     }
   }
   document.addEventListener('pointerup', finishDrag);
   document.addEventListener('pointercancel', finishDrag);
   slots.forEach((slot, index) => {
     slot.addEventListener('click', () => {
+      if (placing) return;
       if (selected !== null) placePiece(selected, index);
       else if (placed[index] !== null) { placed[index] = null; renderPuzzle(); }
     });
