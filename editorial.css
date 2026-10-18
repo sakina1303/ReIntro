@@ -61,8 +61,9 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .code-fragment-n { left: 56%; top: 57%; --tilt: 8deg; opacity: .13; }
 .code-fragment-o { left: 36%; top: 50%; --tilt: -6deg; opacity: .14; }
 .code-fragment-p { left: 43%; top: 64%; --tilt: 5deg; opacity: .13; }
-.hero-scratch { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; transition: opacity 1.2s ease; }
+.hero-scratch { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
 .hero h1, .hero-lower > p, .hero .eyebrow, .hero-bottom { text-shadow: 0 2px 8px #090a0c99; }
+.hero .hero-lower > p { text-shadow: 0 1px 2px #090a0c, 0 0 8px #090a0c, 0 0 16px #090a0c; }
 .hero-inner { z-index: 3; padding-top: clamp(70px, 10vh, 120px); }
 .hero h1 {
   font-weight: 700;
@@ -93,17 +94,14 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .hero.is-light-revealed .primary-cta { background: #b8c8ff; }
 .hero.is-light-revealed .primary-cta:hover,
 .hero.is-light-revealed .primary-cta:focus-visible { background: #a994e9; color: #090a0c; }
-.hero.is-light-revealed .hero-scratch,
-.hero.is-light-revealed .hero-portrait-scratch { opacity: 0; }
-.hero.is-light-revealed h1,
-.hero.is-light-revealed h1 em,
-.hero.is-light-revealed .hero-lower p,
-.hero.is-light-revealed .hero-lower p strong { color: #131725; text-shadow: none; }
-.hero.is-light-revealed .hero-lower p span { color: #415eab; }
-.hero.is-light-revealed .eyebrow,
-.hero.is-light-revealed .hero-bottom { color: #4c5b70; text-shadow: none; }
-.hero.is-light-revealed .subtle-link { color: #202a48; border-color: #526a9a; }
-.hero-portrait-scratch { transition: opacity 1.2s ease; }
+.hero.is-light-dominant h1,
+.hero.is-light-dominant h1 em,
+.hero.is-light-dominant .hero-lower p,
+.hero.is-light-dominant .hero-lower p strong { color: #131725; text-shadow: none; }
+.hero.is-light-dominant .hero-lower p span { color: #415eab; }
+.hero.is-light-dominant .eyebrow,
+.hero.is-light-dominant .hero-bottom { color: #4c5b70; text-shadow: none; }
+.hero.is-light-dominant .subtle-link { color: #202a48; border-color: #526a9a; }
 .hero h1 em { color: #f4f4f2; }
 .hero h1 em span { color: #b8c8ff; }
 .hero-lower { position: relative; z-index: 4; }
@@ -416,6 +414,12 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .puzzle-heading > span { color: #51679c; letter-spacing: .11em; }
 .puzzle-heading strong { font: 700 clamp(20px, 1.8vw, 27px)/1.05 var(--display); letter-spacing: -.055em; }
 .puzzle-heading small { color: #565f70; }
+.puzzle-heading-row { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
+.puzzle-switch { display: flex; align-items: center; gap: 5px; flex: none; color: #415a95; font: 700 9px var(--mono); }
+.puzzle-switch button { width: 32px; height: 32px; padding: 0; border: 1px solid #a5b2d1; background: #edf0ff; color: #263a78; cursor: pointer; }
+.puzzle-switch button:hover, .puzzle-switch button:focus-visible { background: #becaff; }
+.open-puzzle.is-switching .puzzle-board, .open-puzzle.is-switching .puzzle-tray { animation: puzzle-slide .35s ease both; }
+@keyframes puzzle-slide { from { opacity: .35; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
 .puzzle-board { display: grid; grid-template-columns: repeat(2, 104px); grid-template-rows: repeat(2, 104px); justify-content: center; padding: 19px 23px; background: #d8ddeb; border: 1px solid #b2bfd8; overflow: hidden; }
 .puzzle-slot { position: relative; display: grid; place-items: center; min-width: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .puzzle-slot:nth-child(1) { z-index: 4; }
@@ -423,15 +427,14 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .puzzle-slot:nth-child(3) { z-index: 2; }
 .puzzle-slot:nth-child(4) { z-index: 1; }
 .puzzle-shape { position: absolute; width: 140%; height: 140%; left: -20%; top: -20%; overflow: visible; pointer-events: none; filter: drop-shadow(0 2px 2px #41517228); }
-.puzzle-shape path { fill: #edf0f7; stroke: #97a5c1; stroke-width: 1.6; vector-effect: non-scaling-stroke; transition: fill .2s, stroke .2s; }
-.puzzle-slot.is-ready .puzzle-shape path, .puzzle-slot.is-drop-target .puzzle-shape path { fill: #e2e5ff; stroke: #536bab; }
-.puzzle-slot.is-filled .puzzle-shape path { fill: var(--piece-color); stroke: #7184aa; }
+.puzzle-shape .puzzle-surface { fill: #edf0f7; stroke: #97a5c1; stroke-width: 1.6; vector-effect: non-scaling-stroke; transition: fill .2s, stroke .2s; }
+.puzzle-shape .puzzle-outline { fill: none; stroke: #7184aa; stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+.puzzle-slot.is-ready .puzzle-surface, .puzzle-slot.is-drop-target .puzzle-surface { fill: #e2e5ff; stroke: #536bab; }
+.puzzle-slot.is-filled .puzzle-surface { fill: var(--piece-color); stroke: #7184aa; }
 .puzzle-slot.is-filled:nth-child(1) { --piece-color: #d9dff9; }
 .puzzle-slot.is-filled:nth-child(2) { --piece-color: #ecddec; }
 .puzzle-slot.is-filled:nth-child(3) { --piece-color: #dfebe8; }
 .puzzle-slot.is-filled:nth-child(4) { --piece-color: #eee6df; }
-.puzzle-icon { position: relative; z-index: 1; display: block; width: 36px; height: 36px; margin: auto; object-fit: contain; pointer-events: none; }
-.puzzle-slot .puzzle-icon { width: 44px; height: 44px; }
 .puzzle-slot:focus-visible, .puzzle-piece:focus-visible { outline: 2px solid #233d84; outline-offset: 5px; }
 .puzzle-tray { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; min-height: 94px; padding: 20px 8px 14px; }
 .puzzle-piece { position: relative; display: grid; place-items: center; min-width: 0; height: 76px; padding: 0; border: 0; background: transparent; cursor: grab; touch-action: none; transform: rotate(var(--puzzle-tilt)); transition: transform .2s, opacity .2s; }
@@ -440,14 +443,14 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline-color:
 .puzzle-piece:nth-child(3) { --puzzle-tilt: 7deg; --piece-color: #d9dff9; }
 .puzzle-piece:nth-child(4) { --puzzle-tilt: -8deg; --piece-color: #ecddec; }
 .puzzle-piece .puzzle-shape { filter: drop-shadow(2px 4px 2px #53627f55); }
-.puzzle-piece .puzzle-shape path { fill: var(--piece-color); stroke: #7184aa; stroke-width: 2; }
+.puzzle-piece .puzzle-surface { fill: var(--piece-color); stroke: #7184aa; stroke-width: 2; }
 .puzzle-piece:hover, .puzzle-piece.is-selected { transform: translateY(-6px) rotate(0); }
 .puzzle-piece.is-dragging { z-index: 5; pointer-events: none; cursor: grabbing; transform: translate(var(--drag-x), var(--drag-y)) rotate(0); transition: none; }
 .puzzle-slot.is-drop-target { filter: brightness(1.06); }
 .puzzle-slot.is-mismatch { animation: puzzle-nope .32s ease; }
-.puzzle-slot.is-mismatch .puzzle-shape path { stroke: #a45f84; }
+.puzzle-slot.is-mismatch .puzzle-surface { stroke: #a45f84; }
 @keyframes puzzle-nope { 25%, 75% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
-.puzzle-piece.is-selected .puzzle-shape path { stroke: #233d84; stroke-width: 3; }
+.puzzle-piece.is-selected .puzzle-surface { stroke: #233d84; stroke-width: 3; }
 .puzzle-piece[hidden] { display: none; }
 .puzzle-result { grid-column: 1 / -1; align-self: center; margin: 0; color: #344b87; font: 700 17px/1.15 var(--display); letter-spacing: -.035em; }
 .puzzle-result[hidden] { display: none; }

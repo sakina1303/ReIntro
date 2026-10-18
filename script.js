@@ -323,81 +323,94 @@ if (openSource && inkCanvas) {
 
 const openPuzzle = document.getElementById('open-puzzle');
 if (openPuzzle) {
-  const puzzleItems = {
-    github: { title: 'GitHub', icon: 'github.svg', shape: 0 },
-    stackoverflow: { title: 'Stack Overflow', icon: 'stackoverflow.svg', shape: 1 },
-    react: { title: 'React', icon: 'react.svg', shape: 2 },
-    npm: { title: 'npm', icon: 'npm.svg', shape: 3 }
-  };
+  const puzzleItems = [
+    { id: 'github', title: 'GitHub', icon: 'github.svg' },
+    { id: 'stackoverflow', title: 'Stack Overflow', icon: 'stackoverflow.svg' },
+    { id: 'react', title: 'React', icon: 'react.svg' },
+    { id: 'npm', title: 'npm', icon: 'npm.svg' }
+  ];
   const puzzleShapes = [
     'M0 0 H100 V31 C100 36 104 38 108 38 C117 38 119 46 119 50 C119 54 117 62 108 62 C104 62 100 64 100 69 V100 H69 C64 100 62 96 62 92 C62 83 54 81 50 81 C46 81 38 83 38 92 C38 96 36 100 31 100 H0 Z',
     'M0 0 H100 V100 H69 C64 100 62 104 62 108 C62 117 54 119 50 119 C46 119 38 117 38 108 C38 104 36 100 31 100 H0 V69 C0 64 4 62 8 62 C17 62 19 54 19 50 C19 46 17 38 8 38 C4 38 0 36 0 31 Z',
     'M0 0 H31 C36 0 38 -4 38 -8 C38 -17 46 -19 50 -19 C54 -19 62 -17 62 -8 C62 -4 64 0 69 0 H100 V31 C100 36 96 38 92 38 C83 38 81 46 81 50 C81 54 83 62 92 62 C96 62 100 64 100 69 V100 H0 Z',
     'M0 0 H31 C36 0 38 4 38 8 C38 17 46 19 50 19 C54 19 62 17 62 8 C62 4 64 0 69 0 H100 V100 H0 V69 C0 64 -4 62 -8 62 C-17 62 -19 54 -19 50 C-19 46 -17 38 -8 38 C-4 38 0 36 0 31 Z'
   ];
-  function puzzleShape(index) {
+  let activePuzzle = Math.max(0, puzzleItems.findIndex(item => item.id === new URLSearchParams(location.search).get('puzzle')));
+  function puzzleShape(index, filled = false) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'puzzle-shape');
     svg.setAttribute('viewBox', '-20 -20 140 140');
     svg.setAttribute('aria-hidden', 'true');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', puzzleShapes[index]);
-    svg.append(path);
+    const surface = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    surface.setAttribute('class', 'puzzle-surface');
+    surface.setAttribute('d', puzzleShapes[index]);
+    svg.append(surface);
+    if (filled) {
+      const clipId = `puzzle-clip-${activePuzzle}-${index}-${Math.random().toString(36).slice(2, 8)}`;
+      const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+      clip.setAttribute('id', clipId);
+      const clipShape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      clipShape.setAttribute('d', puzzleShapes[index]);
+      clip.append(clipShape);
+      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      image.setAttribute('href', `assets/brand-icons/${puzzleItems[activePuzzle].icon}`);
+      image.setAttribute('x', String(24 - (index % 2) * 100));
+      image.setAttribute('y', String(24 - Math.floor(index / 2) * 100));
+      image.setAttribute('width', '152');
+      image.setAttribute('height', '152');
+      image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      image.setAttribute('clip-path', `url(#${clipId})`);
+      const outline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      outline.setAttribute('class', 'puzzle-outline');
+      outline.setAttribute('d', puzzleShapes[index]);
+      svg.append(clip, image, outline);
+    }
     return svg;
-  }
-  function puzzleIcon(item) {
-    const icon = document.createElement('img');
-    icon.className = 'puzzle-icon';
-    icon.src = `assets/brand-icons/${item.icon}`;
-    icon.alt = '';
-    icon.draggable = false;
-    return icon;
   }
   const slots = Array.from(openPuzzle.querySelectorAll('.puzzle-slot'));
   const pieces = Array.from(openPuzzle.querySelectorAll('.puzzle-piece'));
   const status = document.getElementById('puzzle-status');
   const shareButton = document.getElementById('puzzle-share');
   const result = document.getElementById('puzzle-result');
+  const instruction = document.getElementById('puzzle-instruction');
+  const puzzleIndex = document.getElementById('puzzle-index');
   const placed = [null, null, null, null];
   let selected = null;
   let drag = null;
   let suppressClickId = null;
 
-  const sharedOrder = new URLSearchParams(location.search).get('puzzle')?.split('-');
-  if (sharedOrder?.length === 4 && sharedOrder.every((id, index) => puzzleItems[id]?.shape === index)) {
-    placed.splice(0, 4, ...sharedOrder);
-  }
+  if (new URLSearchParams(location.search).get('complete') === '1') placed.splice(0, 4, 0, 1, 2, 3);
 
   function renderPuzzle() {
-    const count = placed.filter(Boolean).length;
+    const count = placed.filter(value => value !== null).length;
+    instruction.textContent = `${puzzleItems[activePuzzle].title} · Join four fragments to complete the logo.`;
+    puzzleIndex.textContent = `${String(activePuzzle + 1).padStart(2, '0')} / 04`;
     slots.forEach((slot, index) => {
-      const item = puzzleItems[placed[index]];
+      const filled = placed[index] !== null;
       slot.replaceChildren();
       slot.classList.remove('is-mismatch');
-      slot.classList.toggle('is-filled', Boolean(item));
-      slot.classList.toggle('is-ready', Boolean(selected && puzzleItems[selected].shape === index && !item));
-      slot.setAttribute('aria-label', item ? `${item.title}, puzzle space ${index + 1}. Tap to return piece.` : `Empty puzzle space ${index + 1}. Fits ${Object.values(puzzleItems).find(piece => piece.shape === index).title}.`);
-      slot.append(puzzleShape(index));
-      if (item) slot.append(puzzleIcon(item));
+      slot.classList.toggle('is-filled', filled);
+      slot.classList.toggle('is-ready', selected === index && !filled);
+      slot.setAttribute('aria-label', filled ? `${puzzleItems[activePuzzle].title} fragment ${index + 1} placed. Tap to return it.` : `Empty space ${index + 1}. Fits fragment ${index + 1}.`);
+      slot.append(puzzleShape(index, filled));
     });
     pieces.forEach(piece => {
-      if (!piece.firstChild) {
-        const item = puzzleItems[piece.dataset.piece];
-        piece.append(puzzleShape(item.shape), puzzleIcon(item));
-      }
-      piece.hidden = placed.includes(piece.dataset.piece);
-      piece.classList.toggle('is-selected', piece.dataset.piece === selected);
-      piece.setAttribute('aria-pressed', String(piece.dataset.piece === selected));
+      const index = Number(piece.dataset.piece);
+      piece.replaceChildren(puzzleShape(index, true));
+      piece.hidden = placed.includes(index);
+      piece.classList.toggle('is-selected', index === selected);
+      piece.setAttribute('aria-label', `${puzzleItems[activePuzzle].title} logo fragment ${index + 1}`);
+      piece.setAttribute('aria-pressed', String(index === selected));
     });
     openPuzzle.classList.toggle('is-complete', count === 4);
     result.hidden = count !== 4;
     shareButton.disabled = count !== 4;
-    status.textContent = count === 4 ? '4 / 4 · Your build is ready to share' : `${count} / 4 · Assemble the pieces`;
+    status.textContent = count === 4 ? `4 / 4 · ${puzzleItems[activePuzzle].title} is complete` : `${count} / 4 · Assemble the ${puzzleItems[activePuzzle].title} logo`;
   }
 
   function placePiece(id, index) {
-    if (!puzzleItems[id]) return;
-    if (puzzleItems[id].shape !== index) {
+    if (!Number.isInteger(id) || id < 0 || id > 3) return;
+    if (id !== index) {
       const slot = slots[index];
       slot.classList.remove('is-mismatch');
       void slot.offsetWidth;
@@ -412,15 +425,28 @@ if (openPuzzle) {
     renderPuzzle();
   }
 
+  function switchPuzzle(direction) {
+    activePuzzle = (activePuzzle + direction + puzzleItems.length) % puzzleItems.length;
+    placed.fill(null);
+    selected = null;
+    openPuzzle.classList.remove('is-switching');
+    void openPuzzle.offsetWidth;
+    openPuzzle.classList.add('is-switching');
+    renderPuzzle();
+  }
+  document.getElementById('puzzle-prev').addEventListener('click', () => switchPuzzle(-1));
+  document.getElementById('puzzle-next').addEventListener('click', () => switchPuzzle(1));
+
   pieces.forEach(piece => {
     piece.addEventListener('click', () => {
-      if (suppressClickId === piece.dataset.piece) { suppressClickId = null; return; }
-      selected = selected === piece.dataset.piece ? null : piece.dataset.piece;
+      const id = Number(piece.dataset.piece);
+      if (suppressClickId === id) { suppressClickId = null; return; }
+      selected = selected === id ? null : id;
       renderPuzzle();
     });
     piece.addEventListener('pointerdown', event => {
       if (event.button !== 0) return;
-      drag = { piece, id: piece.dataset.piece, x: event.clientX, y: event.clientY, moved: false };
+      drag = { piece, id: Number(piece.dataset.piece), x: event.clientX, y: event.clientY, moved: false };
     });
   });
   document.addEventListener('pointermove', event => {
@@ -434,7 +460,7 @@ if (openPuzzle) {
     drag.piece.style.setProperty('--drag-y', `${dy}px`);
     slots.forEach(slot => slot.classList.remove('is-drop-target'));
     const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.puzzle-slot');
-    if (target && puzzleItems[drag.id].shape === Number(target.dataset.slot)) target.classList.add('is-drop-target');
+    if (target && drag.id === Number(target.dataset.slot)) target.classList.add('is-drop-target');
   });
   function finishDrag(event) {
     if (!drag) return;
@@ -455,16 +481,17 @@ if (openPuzzle) {
   document.addEventListener('pointercancel', finishDrag);
   slots.forEach((slot, index) => {
     slot.addEventListener('click', () => {
-      if (selected) placePiece(selected, index);
-      else if (placed[index]) { placed[index] = null; renderPuzzle(); }
+      if (selected !== null) placePiece(selected, index);
+      else if (placed[index] !== null) { placed[index] = null; renderPuzzle(); }
     });
   });
   shareButton.addEventListener('click', async () => {
-    if (placed.some(id => !id)) return;
+    if (placed.some(id => id === null)) return;
     const url = new URL(location.href);
-    url.searchParams.set('puzzle', placed.join('-'));
+    url.searchParams.set('puzzle', puzzleItems[activePuzzle].id);
+    url.searchParams.set('complete', '1');
     url.hash = 'open-source';
-    const text = `I put together Sakina Farukh Ahmed's developer puzzle: ${placed.map(id => puzzleItems[id].title).join(' · ')}.`;
+    const text = `I assembled the ${puzzleItems[activePuzzle].title} logo on Sakina Farukh Ahmed's portfolio.`;
     if (navigator.share) {
       try { await navigator.share({ title: 'Sakina’s open source puzzle', text, url: url.href }); return; }
       catch (error) { if (error.name === 'AbortError') return; }
@@ -561,7 +588,7 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
     revealColumns = Math.max(1, Math.ceil(bounds.width / revealCellSize));
     revealRows = Math.max(1, Math.ceil(bounds.height / revealCellSize));
     revealCells.clear();
-    hero.classList.remove('is-light-revealed');
+    hero.classList.remove('is-light-revealed', 'is-light-dominant');
     paintPortraitMono();
   }
   function dab(context, x, y, radius, edgeStart) {
@@ -577,7 +604,7 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
     context.restore();
   }
   function recordReveal(x, y) {
-    if (hero.classList.contains('is-light-revealed')) return;
+    if (hero.classList.contains('is-light-dominant')) return;
     const column = Math.floor(x / revealCellSize);
     const row = Math.floor(y / revealCellSize);
     for (let cy = Math.max(0, row - 1); cy <= Math.min(revealRows - 1, row + 1); cy++) {
@@ -585,7 +612,9 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
         revealCells.add(cy * revealColumns + cx);
       }
     }
-    if (revealCells.size / (revealColumns * revealRows) >= .4) hero.classList.add('is-light-revealed');
+    const coverage = revealCells.size / (revealColumns * revealRows);
+    if (coverage >= .4) hero.classList.add('is-light-revealed');
+    if (coverage >= .82) hero.classList.add('is-light-dominant');
   }
   function scratchAt(x, y) {
     dab(backgroundInk, x, y, 54, .91);
