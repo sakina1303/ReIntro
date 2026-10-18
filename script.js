@@ -83,13 +83,15 @@ let currentProject = 0;
 function showProject(index) {
   currentProject = (index + projects.length) % projects.length;
   const span = orbit.clientWidth * (window.innerWidth <= 600 ? .68 : .48);
+  const cardHeight = discs[0].offsetHeight;
+  orbit.style.setProperty('--shelf-y', `${orbit.clientHeight / 2 + cardHeight / 2}px`);
   discs.forEach((disc, i) => {
     let offset = i - currentProject;
     if (offset > projects.length / 2) offset -= projects.length;
     if (offset < -projects.length / 2) offset += projects.length;
     const distance = Math.abs(offset);
     const scale = distance === 0 ? 1 : distance === 1 ? .78 : .62;
-    disc.style.transform = `translate(-50%, -50%) translateX(${offset * span}px) scale(${scale}) rotate(${offset * -8}deg)`;
+    disc.style.transform = `translate(-50%, -50%) translateX(${offset * span}px) translateY(${(1 - scale) * cardHeight / 2}px) scale(${scale}) rotate(${offset * -2}deg)`;
     disc.style.opacity = distance > 1 ? '0' : '1';
     disc.style.zIndex = String(10 - distance);
     disc.style.pointerEvents = distance > 1 ? 'none' : 'auto';
@@ -232,7 +234,7 @@ if (openSource && inkCanvas) {
   const strokes = [];
   let lastInkPoint = null;
   let inkFrame = 0;
-  const inkLife = 2800;
+  const inkLife = 3800;
   function sizeInkCanvas() {
     const bounds = openSource.getBoundingClientRect();
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -252,9 +254,9 @@ if (openSource && inkCanvas) {
       if (age > inkLife) { strokes.splice(i, 1); continue; }
       ink.beginPath();
       ink.moveTo(stroke.x1, stroke.y1);
-      ink.quadraticCurveTo(stroke.x1, stroke.y1, stroke.x2, stroke.y2);
-      ink.strokeStyle = `rgba(64, 78, 137, ${(.7 * (1 - age / inkLife)).toFixed(3)})`;
-      ink.lineWidth = 1.1 + .7 * (1 - age / inkLife);
+      ink.lineTo(stroke.x2, stroke.y2);
+      ink.strokeStyle = `rgba(109, 93, 177, ${(.68 * (1 - age / inkLife)).toFixed(3)})`;
+      ink.lineWidth = 6 + 2 * (1 - age / inkLife);
       ink.lineCap = 'round';
       ink.lineJoin = 'round';
       ink.stroke();
@@ -267,7 +269,7 @@ if (openSource && inkCanvas) {
       const distance = Math.hypot(x - lastInkPoint.x, y - lastInkPoint.y);
       if (distance > 2 && distance < 100) {
         strokes.push({ x1: lastInkPoint.x, y1: lastInkPoint.y, x2: x, y2: y, time: now });
-        if (strokes.length > 420) strokes.shift();
+        if (strokes.length > 700) strokes.shift();
         if (!inkFrame) inkFrame = requestAnimationFrame(drawInk);
       }
     }
@@ -310,7 +312,6 @@ if (questionArt && questionText) {
     questionText.classList.add('is-entering');
   }
   function startQuestions() {
-    questionArt.classList.add('is-drawing');
     if (motionReduced.matches || questionTimer) return;
     showQuestion(questionIndex + 1);
     questionTimer = window.setInterval(() => showQuestion(questionIndex + 1), 1750);
@@ -318,7 +319,6 @@ if (questionArt && questionText) {
   function stopQuestions() {
     window.clearInterval(questionTimer);
     questionTimer = 0;
-    questionArt.classList.remove('is-drawing');
     if (!motionReduced.matches) showQuestion(0);
   }
   questionArt.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse' || event.pointerType === 'pen') startQuestions(); });
@@ -328,7 +328,7 @@ if (questionArt && questionText) {
     questionArt.style.setProperty('--question-x', `${((event.clientX - bounds.left) / bounds.width - .5) * 14}px`);
     questionArt.style.setProperty('--question-y', `${((event.clientY - bounds.top) / bounds.height - .5) * 14}px`);
   }, { passive: true });
-  questionArt.addEventListener('click', () => { showQuestion(questionIndex + 1); questionArt.classList.add('is-drawing'); });
+  questionArt.addEventListener('click', () => showQuestion(questionIndex + 1));
   questionArt.addEventListener('focus', startQuestions);
   questionArt.addEventListener('blur', stopQuestions);
   questionArt.addEventListener('keydown', event => {
