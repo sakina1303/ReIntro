@@ -528,6 +528,10 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
   const backgroundInk = heroScratch.getContext('2d');
   const portraitInk = portraitScratch.getContext('2d');
   let lastScratchPoint = null;
+  const revealCells = new Set();
+  const revealCellSize = 72;
+  let revealColumns = 1;
+  let revealRows = 1;
   function sizeScratchCanvas(canvas, context, width, height) {
     const ratio = Math.min(window.devicePixelRatio || 1, window.innerWidth <= 600 ? 1.5 : 2);
     canvas.width = Math.round(width * ratio);
@@ -554,14 +558,17 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
     sizeScratchCanvas(heroScratch, backgroundInk, bounds.width, bounds.height);
     backgroundInk.fillStyle = '#090a0c';
     backgroundInk.fillRect(0, 0, bounds.width, bounds.height);
+    revealColumns = Math.max(1, Math.ceil(bounds.width / revealCellSize));
+    revealRows = Math.max(1, Math.ceil(bounds.height / revealCellSize));
+    revealCells.clear();
+    hero.classList.remove('is-light-revealed');
     paintPortraitMono();
   }
-  function dab(context, x, y, radius) {
+  function dab(context, x, y, radius, edgeStart) {
     context.save();
     context.globalCompositeOperation = 'destination-out';
-    const feather = context.createRadialGradient(x, y, radius * .22, x, y, radius);
+    const feather = context.createRadialGradient(x, y, radius * edgeStart, x, y, radius);
     feather.addColorStop(0, 'rgba(0,0,0,1)');
-    feather.addColorStop(.56, 'rgba(0,0,0,.94)');
     feather.addColorStop(1, 'rgba(0,0,0,0)');
     context.fillStyle = feather;
     context.beginPath();
@@ -569,15 +576,26 @@ if (hero && heroScratch && portraitScratch && portraitCard && portraitImage) {
     context.fill();
     context.restore();
   }
+  function recordReveal(x, y) {
+    if (hero.classList.contains('is-light-revealed')) return;
+    const column = Math.floor(x / revealCellSize);
+    const row = Math.floor(y / revealCellSize);
+    for (let cy = Math.max(0, row - 1); cy <= Math.min(revealRows - 1, row + 1); cy++) {
+      for (let cx = Math.max(0, column - 1); cx <= Math.min(revealColumns - 1, column + 1); cx++) {
+        revealCells.add(cy * revealColumns + cx);
+      }
+    }
+    if (revealCells.size / (revealColumns * revealRows) >= .4) hero.classList.add('is-light-revealed');
+  }
   function scratchAt(x, y) {
-    hero.classList.add('is-scratched');
-    dab(backgroundInk, x, y, 68);
+    dab(backgroundInk, x, y, 54, .91);
+    recordReveal(x, y);
     const heroBounds = hero.getBoundingClientRect();
     const portraitBounds = portraitCard.getBoundingClientRect();
     const imageX = x + heroBounds.left - portraitBounds.left;
     const imageY = y + heroBounds.top - portraitBounds.top;
     if (imageX > -36 && imageY > -36 && imageX < portraitBounds.width + 36 && imageY < portraitBounds.height + 36) {
-      dab(portraitInk, imageX, imageY, 48);
+      dab(portraitInk, imageX, imageY, 48, .58);
     }
   }
   function scratch(event) {
