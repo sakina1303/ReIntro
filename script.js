@@ -226,20 +226,124 @@ if (robot) {
 
 const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 const openSource = document.getElementById('open-source');
-const inkField = document.getElementById('ink-field');
-if (openSource && inkField) {
+const inkCanvas = document.getElementById('ink-canvas');
+if (openSource && inkCanvas) {
+  const ink = inkCanvas.getContext('2d');
+  const strokes = [];
+  let lastInkPoint = null;
+  let inkFrame = 0;
+  const inkLife = 2800;
+  function sizeInkCanvas() {
+    const bounds = openSource.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    inkCanvas.width = Math.round(bounds.width * ratio);
+    inkCanvas.height = Math.round(bounds.height * ratio);
+    inkCanvas.style.width = `${bounds.width}px`;
+    inkCanvas.style.height = `${bounds.height}px`;
+    ink.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  function drawInk(now) {
+    inkFrame = 0;
+    const bounds = openSource.getBoundingClientRect();
+    ink.clearRect(0, 0, bounds.width, bounds.height);
+    for (let i = strokes.length - 1; i >= 0; i--) {
+      const stroke = strokes[i];
+      const age = now - stroke.time;
+      if (age > inkLife) { strokes.splice(i, 1); continue; }
+      ink.beginPath();
+      ink.moveTo(stroke.x1, stroke.y1);
+      ink.quadraticCurveTo(stroke.x1, stroke.y1, stroke.x2, stroke.y2);
+      ink.strokeStyle = `rgba(64, 78, 137, ${(.7 * (1 - age / inkLife)).toFixed(3)})`;
+      ink.lineWidth = 1.1 + .7 * (1 - age / inkLife);
+      ink.lineCap = 'round';
+      ink.lineJoin = 'round';
+      ink.stroke();
+    }
+    if (strokes.length) inkFrame = requestAnimationFrame(drawInk);
+  }
+  function addInk(x, y, connect = true) {
+    const now = performance.now();
+    if (connect && lastInkPoint) {
+      const distance = Math.hypot(x - lastInkPoint.x, y - lastInkPoint.y);
+      if (distance > 2 && distance < 100) {
+        strokes.push({ x1: lastInkPoint.x, y1: lastInkPoint.y, x2: x, y2: y, time: now });
+        if (strokes.length > 420) strokes.shift();
+        if (!inkFrame) inkFrame = requestAnimationFrame(drawInk);
+      }
+    }
+    lastInkPoint = { x, y };
+  }
+  sizeInkCanvas();
+  if ('ResizeObserver' in window) new ResizeObserver(sizeInkCanvas).observe(openSource);
+  else window.addEventListener('resize', sizeInkCanvas);
+  openSource.addEventListener('pointermove', event => {
+    if (motionReduced.matches || (event.pointerType !== 'mouse' && event.pointerType !== 'pen')) return;
+    const bounds = openSource.getBoundingClientRect();
+    addInk(event.clientX - bounds.left, event.clientY - bounds.top);
+  }, { passive: true });
+  openSource.addEventListener('pointerleave', () => { lastInkPoint = null; });
   openSource.addEventListener('pointerdown', event => {
     if (motionReduced.matches || (event.pointerType === 'mouse' && event.button !== 0)) return;
     const bounds = openSource.getBoundingClientRect();
-    const burst = document.createElement('span');
-    burst.className = 'ink-burst';
-    burst.style.left = `${event.clientX - bounds.left}px`;
-    burst.style.top = `${event.clientY - bounds.top}px`;
-    burst.innerHTML = '<i></i><b></b>';
-    inkField.appendChild(burst);
-    if (inkField.childElementCount > 7) inkField.firstElementChild.remove();
-    window.setTimeout(() => burst.remove(), 1900);
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    lastInkPoint = { x: x - 12, y: y + 8 };
+    addInk(x + 12, y - 8);
+    lastInkPoint = { x: x - 6, y: y - 11 };
+    addInk(x + 6, y + 11);
+    lastInkPoint = null;
   }, { passive: true });
+}
+
+const questionArt = document.getElementById('question-art');
+const questionText = document.getElementById('question-text');
+if (questionArt && questionText) {
+  const questions = ['WHAT<br>IF?', 'WHAT CAN<br>I MAKE?', 'COULD IT<br>HELP?', 'WHAT<br>COMES NEXT?'];
+  let questionIndex = 0;
+  let questionTimer = 0;
+  function showQuestion(index) {
+    questionIndex = index % questions.length;
+    questionText.classList.remove('is-entering');
+    void questionText.offsetWidth;
+    questionText.innerHTML = questions[questionIndex];
+    questionArt.querySelector('.question-index').textContent = `A QUESTION IN MOTION / ${String(questionIndex + 1).padStart(2, '0')}`;
+    questionText.classList.add('is-entering');
+  }
+  function startQuestions() {
+    questionArt.classList.add('is-drawing');
+    if (motionReduced.matches || questionTimer) return;
+    showQuestion(questionIndex + 1);
+    questionTimer = window.setInterval(() => showQuestion(questionIndex + 1), 1750);
+  }
+  function stopQuestions() {
+    window.clearInterval(questionTimer);
+    questionTimer = 0;
+    questionArt.classList.remove('is-drawing');
+    if (!motionReduced.matches) showQuestion(0);
+  }
+  questionArt.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse' || event.pointerType === 'pen') startQuestions(); });
+  questionArt.addEventListener('pointerleave', stopQuestions);
+  questionArt.addEventListener('pointermove', event => {
+    const bounds = questionArt.getBoundingClientRect();
+    questionArt.style.setProperty('--question-x', `${((event.clientX - bounds.left) / bounds.width - .5) * 14}px`);
+    questionArt.style.setProperty('--question-y', `${((event.clientY - bounds.top) / bounds.height - .5) * 14}px`);
+  }, { passive: true });
+  questionArt.addEventListener('click', () => { showQuestion(questionIndex + 1); questionArt.classList.add('is-drawing'); });
+  questionArt.addEventListener('focus', startQuestions);
+  questionArt.addEventListener('blur', stopQuestions);
+  questionArt.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showQuestion(questionIndex + 1); }
+  });
+}
+
+const hero = document.querySelector('.hero');
+if (hero) {
+  hero.addEventListener('click', event => {
+    const bounds = hero.getBoundingClientRect();
+    hero.style.setProperty('--reveal-x', `${event.clientX - bounds.left}px`);
+    hero.style.setProperty('--reveal-y', `${event.clientY - bounds.top}px`);
+    hero.classList.toggle('is-colorized');
+  });
 }
 const editorialHeadings = document.querySelectorAll('.chapter-intro h2, .projects-heading h2, .open-source h2, .next h2');
 if ('IntersectionObserver' in window && !motionReduced.matches) {
