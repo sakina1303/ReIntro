@@ -161,7 +161,7 @@
     const third = localRect(acts[2]);
     const introBox = localRect(intro);
     const closing = localRect(close);
-    if (width <= 700) return [
+    if (width <= 850) return [
       [width * .78, title.top + title.height * .16],
       [width * .87, introBox.bottom - 16],
       [width * .13, first.top + 25],
@@ -171,21 +171,24 @@
       [width * .18, second.bottom - 30],
       [width * .11, third.top + third.height * .48],
       [width * .21, third.bottom - 20],
-      [width * .2, Math.min(height - 4, closing.bottom + 90)]
+      [width * .2, Math.min(height - 23, closing.bottom + 90)]
     ];
+    const firstVisual = localRect(acts[0].querySelector('.act-visual'));
+    const secondVisual = localRect(acts[1].querySelector('.act-visual'));
     return [
-      [Math.min(width * .57, title.right + 22), title.top + title.height * .18],
-      [width * .58, introBox.bottom - 38],
-      [width * .055, first.top + 56],
-      [width * .04, first.top + first.height * .53],
-      [width * .61, first.bottom - 56],
-      [width * .84, second.top + 52],
-      [width * .86, second.top + second.height * .53],
-      [width * .60, second.bottom - 56],
-      [width * .055, third.top + 62],
-      [width * .04, third.top + third.height * .52],
-      [width * .04, third.bottom - 65],
-      [width * .55, Math.min(height - 4, closing.bottom + 90)]
+      [width * .82, Math.max(16, introBox.top - 105)],
+      [firstVisual.left - 110, introBox.bottom - 20],
+      [firstVisual.left - 110, firstVisual.top - 80],
+      [firstVisual.left + 10, firstVisual.top + 4],
+      [firstVisual.left + firstVisual.width * .65, firstVisual.bottom - 15],
+      [Math.min(width * .89, firstVisual.right - 20), first.bottom - 25],
+      [secondVisual.left + secondVisual.width * .62, secondVisual.top + 10],
+      [secondVisual.left + secondVisual.width * .55, secondVisual.bottom - 8],
+      [width * .56, second.bottom + 10],
+      [width * .16, third.top + 55],
+      [width * .14, third.top + third.height * .55],
+      [width * .25, third.bottom - 55],
+      [width * .55, Math.min(height - 23, closing.bottom + 90)]
     ];
   }
 
@@ -358,6 +361,20 @@
     const horizontalScale = Math.min(splashWidth / 870, 1.18) * (.12 + grow * .88);
     const verticalScale = splashHeight / 580 * (.12 + grow * .88);
     splashCtx.save();
+    // Two lighter smoke wings bloom from the same impact, then disappear with it.
+    const wingWidth = Math.min(splashWidth * .38, 490) * (.08 + grow * .92);
+    const wingHeight = splashHeight * .62 * (.12 + grow * .88);
+    const wingTop = 20 + (1 - grow) * 26;
+    for (const side of [-1, 1]) {
+      const sourceX = side < 0 ? 20 : 620;
+      const x = side < 0 ? origin - wingWidth * .94 : origin - wingWidth * .06;
+      splashCtx.globalAlpha = opacity * .27;
+      splashCtx.filter = 'blur(24px)';
+      splashCtx.drawImage(powderTexture, sourceX, 48, 560, 480, x, wingTop, wingWidth, wingHeight);
+      splashCtx.filter = 'none';
+      splashCtx.globalAlpha = opacity * .53;
+      splashCtx.drawImage(powderTexture, sourceX, 48, 560, 480, x, wingTop, wingWidth, wingHeight);
+    }
     splashCtx.globalAlpha = opacity * .3;
     splashCtx.filter = 'blur(22px)';
     splashCtx.drawImage(powderTexture, origin - 600 * horizontalScale, 0,
