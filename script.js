@@ -180,6 +180,22 @@ if (robot) {
 }
 
 const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+const openSource = document.getElementById('open-source');
+const inkField = document.getElementById('ink-field');
+if (openSource && inkField) {
+  openSource.addEventListener('pointerdown', event => {
+    if (motionReduced.matches || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    const bounds = openSource.getBoundingClientRect();
+    const burst = document.createElement('span');
+    burst.className = 'ink-burst';
+    burst.style.left = `${event.clientX - bounds.left}px`;
+    burst.style.top = `${event.clientY - bounds.top}px`;
+    burst.innerHTML = '<i></i><b></b>';
+    inkField.appendChild(burst);
+    if (inkField.childElementCount > 7) inkField.firstElementChild.remove();
+    window.setTimeout(() => burst.remove(), 1900);
+  }, { passive: true });
+}
 const editorialHeadings = document.querySelectorAll('.chapter-intro h2, .projects-heading h2, .open-source h2, .next h2');
 if ('IntersectionObserver' in window && !motionReduced.matches) {
   const headingObserver = new IntersectionObserver(entries => {
