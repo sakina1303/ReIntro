@@ -1,23 +1,83 @@
-# Sakina Farukh Ahmed — Portfolio
+# Sakina Farukh Ahemad
 
-A visual, interactive portfolio for web development, software engineering, and AI-focused roles. It tells Sakina's journey through selected projects and open-source work, including an interactive After Query agent sculpture.
+### Computer Science Engineer • AI/ML • Software Development • Product
 
-## Files
+Welcome to my portfolio.
 
-This is a static website. `index.html`, `styles.css`, `editorial.css`, and `script.js` contain the site. `sakina-portrait.png`, `favicon.svg`, and `Sakina_Farukh_Ahmed_Resume.pdf` are its assets. No package installation or build step is required.
+I’m Sakina, a Computer Science and Engineering student focused on **AI/ML, software development, and building practical products**.
 
-## Run locally
+This portfolio is an interactive space where I showcase my projects, experiments, technical work, and open source contributions.
 
-From this directory:
+## ✦ What's Inside
 
-```sh
+**Projects**  
+A collection of web, mobile, AI, and software projects I’ve built.
+
+**AI & ML**  
+Experiments and projects exploring machine learning, generative AI, and intelligent systems.
+
+**Software Development**  
+Full stack applications, developer tools, extensions, and other engineering work.
+
+**Open Source**  
+Projects, contributions, and experiments built in public.
+
+**About Me**  
+My journey, skills, experience, and the things I’m currently working on.
+
+## ✦ Featured
+
+The portfolio includes an interactive **After Query agent sculpture**, designed as part of the portfolio experience rather than just a traditional project showcase.
+
+## ✦ Tech Stack
+
+```text
+Frontend      React · Next.js · TypeScript · JavaScript · Tailwind CSS
+Backend       Python · Flask · Node.js · Express
+AI / ML       Python · PyTorch · Generative AI
+Databases     MongoDB · MySQL · PostgreSQL · Supabase
+Mobile        React Native · Expo
+Tools         Git · GitHub · Figma · Vite
+```
+
+## ✦ Currently Exploring
+
+AI and machine learning  
+Intelligent developer tools  
+Product engineering  
+Energy systems and AI  
+Research driven software  
+Open source
+
+## ✦ Run Locally
+
+Clone the repository and open the project directory:
+
+```bash
+git clone https://github.com/sakina1303/MyPortfolio.git
+cd MyPortfolio
+```
+
+Start the local server:
+
+```bash
 python3 -m http.server 8765
 ```
 
-Then open `http://localhost:8765`.
+Then open:
 
-## Deploy on Vercel
+```text
+http://localhost:8765
+```
 
-Import this repository in Vercel. The `vercel.json` file sets the framework to **Other** and serves the repository root directly. The build command is blank. After linking the repository, pushes to its production branch can deploy automatically.
+## ✦ Connect
 
-The résumé PDF and portrait are included in the public website assets.
+**Portfolio:** https://sakinaportfolio-gamma.vercel.app/
+
+**GitHub:** https://github.com/sakina1303
+
+---
+
+Built with curiosity, code, and a lot of late night debugging.
+
+**Sakina Farukh Ahemad**
